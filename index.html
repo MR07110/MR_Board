@@ -2,315 +2,554 @@
 <html lang="uz">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>MR Board · Figma Edition</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no">
+    <title>MR Board · Studio</title>
     <link rel="icon" type="image/png" href="mr.png">
-    
     <script src="https://unpkg.com/lucide@latest"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+    <script src="https://unpkg.com/roughjs@latest/bundled/rough.js"></script>
 
     <style>
-        /* ==========================================================================
-           FIGMA STYLE DESIGN SYSTEM
-           ========================================================================== */
-        :root {
-            /* Figma Dark Theme Colors */
-            --bg-canvas: #1e1e1e;
-            --bg-panel: #2c2c2c;
-            --bg-hover: #383838;
-            --border: #444444;
-            --accent: #0d99ff;
-            --accent-hover: #0b80d6;
-            --text-main: #ffffff;
-            --text-muted: #aaaaaa;
-            --danger: #f24e1e;
-            
-            --radius: 6px;
-            --shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            user-select: none;
+            -webkit-user-select: none;
+            touch-action: manipulation;
         }
 
-        * {
-            margin: 0; padding: 0; box-sizing: border-box;
-            user-select: none; -webkit-user-select: none;
-            font-family: 'Inter', -apple-system, sans-serif;
-            -webkit-tap-highlight-color: transparent;
+        :root {
+            --bg: #0a0a0f;
+            --surface: #14141a;
+            --surface-light: #1e1e26;
+            --border: #2a2a32;
+            --accent: #3b82f6;
+            --accent-glow: rgba(59,130,246,0.4);
+            --text: #ffffff;
+            --text-muted: #8b8b98;
         }
 
         body {
-            background: var(--bg-canvas);
-            color: var(--text-main);
+            background: var(--bg);
+            font-family: -apple-system, BlinkMacSystemFont, 'Inter', system-ui, sans-serif;
             overflow: hidden;
-            height: 100vh; width: 100vw;
+            height: 100vh;
+            width: 100vw;
+            color: var(--text);
         }
 
         canvas {
-            display: block; width: 100%; height: 100%;
-            touch-action: none; cursor: crosshair;
-            position: absolute; z-index: 1;
+            display: block;
+            width: 100%;
+            height: 100%;
+            touch-action: none;
+            cursor: crosshair;
+            position: absolute;
+            top: 0;
+            left: 0;
+            z-index: 0;
         }
 
-        /* ========== WELCOME PAGE (Figma File Browser Style) ========== */
+        /* ========== WELCOME ========== */
         #welcome-page {
-            position: fixed; inset: 0; display: flex; align-items: center; justify-content: center;
-            background: var(--bg-canvas); z-index: 2000; padding: 20px;
+            position: fixed;
+            inset: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: var(--bg);
+            z-index: 2000;
+            padding: 20px;
         }
+
         .welcome-card {
-            background: var(--bg-panel); border: 1px solid var(--border);
-            border-radius: var(--radius); padding: 32px; width: 100%; max-width: 380px;
-            box-shadow: var(--shadow);
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 32px;
+            padding: 40px 32px;
+            width: 100%;
+            max-width: 380px;
         }
-        .welcome-card h1 { font-size: 24px; font-weight: 600; margin-bottom: 24px; text-align: center; }
-        
+
+        .welcome-card h1 {
+            font-size: 36px;
+            font-weight: 700;
+            margin-bottom: 28px;
+            text-align: center;
+            background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
         .btn {
-            width: 100%; padding: 10px 16px; border-radius: var(--radius); border: none;
-            font-size: 13px; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; transition: 0.15s;
+            width: 100%;
+            padding: 14px 20px;
+            border-radius: 40px;
+            border: none;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            transition: all 0.2s;
         }
         .btn-primary { background: var(--accent); color: white; }
-        .btn-primary:hover { background: var(--accent-hover); }
-        .btn-secondary { background: transparent; border: 1px solid var(--border); color: var(--text-main); }
-        .btn-secondary:hover { background: var(--bg-hover); }
-        
+        .btn-primary:active { transform: scale(0.97); }
+        .btn-secondary { background: var(--surface-light); border: 1px solid var(--border); color: var(--text); }
+        .btn-secondary:active { transform: scale(0.97); }
+
         .input-field {
-            width: 100%; padding: 10px; border-radius: var(--radius); border: 1px solid var(--border);
-            background: var(--bg-canvas); color: white; font-size: 13px; outline: none; margin-bottom: 12px;
+            width: 100%;
+            padding: 14px;
+            border-radius: 40px;
+            border: 1px solid var(--border);
+            background: var(--bg);
+            color: var(--text);
+            font-size: 15px;
+            outline: none;
+            margin-bottom: 14px;
         }
         .input-field:focus { border-color: var(--accent); }
+        .divider { height: 1px; background: var(--border); margin: 24px 0; }
 
-        .divider { height: 1px; background: var(--border); margin: 20px 0; }
-
-        /* ========== APP UI PANELS ========== */
-        #app-page { display: none; width: 100vw; height: 100vh; position: relative; }
-
-        .figma-panel {
-            background: var(--bg-panel); border: 1px solid var(--border);
-            position: fixed; z-index: 100;
+        /* ========== APP ========== */
+        #app-page {
+            display: none;
+            width: 100vw;
+            height: 100vh;
+            position: relative;
         }
 
-        /* Top Header */
-        .top-bar {
-            top: 0; left: 0; right: 0; height: 48px; border-width: 0 0 1px 0;
-            display: flex; align-items: center; justify-content: space-between; padding: 0 16px;
+        /* ========== TOP STATUS ========== */
+        .top-status {
+            position: fixed;
+            top: 16px;
+            left: 16px;
+            right: 16px;
+            display: flex;
+            justify-content: space-between;
+            z-index: 50;
+            pointer-events: none;
         }
-        .top-left, .top-right { display: flex; align-items: center; gap: 12px; }
-        .room-badge { font-size: 12px; font-weight: 600; color: var(--text-muted); display: flex; align-items: center; gap: 6px; cursor: pointer; padding: 6px 10px; border-radius: var(--radius); }
-        .room-badge:hover { background: var(--bg-hover); color: white; }
-        
-        /* Left Toolbar (Tools) */
-        .left-toolbar {
-            top: 60px; left: 12px; width: 44px; border-radius: var(--radius);
-            display: flex; flex-direction: column; padding: 6px; gap: 4px; box-shadow: var(--shadow);
+        .status-chip {
+            background: rgba(20, 20, 26, 0.7);
+            backdrop-filter: blur(12px);
+            padding: 6px 14px;
+            border-radius: 40px;
+            font-size: 12px;
+            pointer-events: auto;
+            border: 1px solid var(--border);
         }
-        
-        .tool-btn {
-            width: 30px; height: 30px; border-radius: 4px; border: none; background: transparent;
-            color: var(--text-muted); display: flex; align-items: center; justify-content: center;
-            cursor: pointer; transition: 0.1s;
+
+        /* ========== BOTTOM BAR ========== */
+        .bottom-bar {
+            position: fixed;
+            bottom: 16px;
+            left: 16px;
+            right: 16px;
+            background: rgba(20, 20, 26, 0.92);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 60px;
+            padding: 8px 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            z-index: 100;
         }
-        .tool-btn:hover { background: var(--bg-hover); color: white; }
-        .tool-btn.active { background: rgba(13, 153, 255, 0.15); color: var(--accent); }
-        .tool-btn.disabled { opacity: 0.3; pointer-events: none; }
-        .tool-btn i { width: 16px; height: 16px; }
-
-        .toolbar-divider { height: 1px; background: var(--border); margin: 4px 0; }
-
-        /* Right Panel (Properties) */
-        .right-panel {
-            top: 60px; right: 12px; width: 240px; border-radius: var(--radius);
-            display: flex; flex-direction: column; box-shadow: var(--shadow);
+        .bar-left, .bar-right { display: flex; align-items: center; gap: 12px; }
+        .bar-center { display: flex; align-items: center; gap: 8px; background: rgba(0,0,0,0.3); padding: 4px 12px; border-radius: 40px; }
+        .bar-btn {
+            width: 44px;
+            height: 44px;
+            border-radius: 44px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: transparent;
+            border: none;
+            color: var(--text-muted);
+            cursor: pointer;
         }
-        .panel-section { padding: 12px; border-bottom: 1px solid var(--border); }
-        .panel-section:last-child { border-bottom: none; }
-        .section-title { font-size: 10px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; margin-bottom: 12px; letter-spacing: 0.5px; }
+        .bar-btn:active { transform: scale(0.92); background: rgba(255,255,255,0.05); }
+        .bar-btn.active { color: var(--accent); background: rgba(59,130,246,0.15); }
+        .color-indicator { width: 32px; height: 32px; border-radius: 32px; border: 2px solid var(--border); cursor: pointer; }
 
-        /* Sliders */
-        .prop-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; font-size: 12px; color: var(--text-muted); }
-        .figma-slider { -webkit-appearance: none; width: 100%; height: 2px; background: var(--border); border-radius: 2px; outline: none; margin-bottom: 16px; }
-        .figma-slider::-webkit-slider-thumb { -webkit-appearance: none; width: 12px; height: 12px; border-radius: 50%; background: white; border: 1px solid var(--border); cursor: pointer; }
-        .figma-slider::-webkit-slider-thumb:hover { transform: scale(1.2); }
+        /* ========== VOICE WAVES - APPLE/SPOTIFY STYLE ========== */
+        .voice-wave-container {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            height: 44px;
+            padding: 0 8px;
+            background: rgba(0,0,0,0.3);
+            border-radius: 44px;
+        }
+        .wave-group {
+            display: flex;
+            align-items: center;
+            gap: 3px;
+            height: 32px;
+        }
+        .wave-bar {
+            width: 3px;
+            background: var(--accent);
+            border-radius: 2px;
+            transition: height 0.08s ease-out;
+            will-change: height;
+        }
+        .voice-level-text {
+            font-size: 10px;
+            color: var(--text-muted);
+            margin-left: 8px;
+            min-width: 45px;
+            font-family: monospace;
+        }
+        .mic-active .wave-bar { background: #22c55e; }
+        .mic-active .voice-level-text { color: #22c55e; }
 
-        /* Color Grid */
-        .color-grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 6px; }
-        .color-swatch { width: 24px; height: 24px; border-radius: 4px; cursor: pointer; border: 1px solid rgba(255,255,255,0.1); }
-        .color-swatch.active { border: 2px solid white; transform: scale(1.1); }
+        /* ========== LEFT SIDE MENU ========== */
+        .side-menu {
+            position: fixed;
+            top: 0;
+            bottom: 0;
+            width: 300px;
+            background: rgba(20, 20, 26, 0.96);
+            backdrop-filter: blur(24px);
+            border-right: 1px solid var(--border);
+            z-index: 200;
+            transform: translateX(-100%);
+            transition: transform 0.3s;
+            overflow-y: auto;
+            padding: 20px 0;
+        }
+        .side-menu.open { transform: translateX(0); }
+        .menu-header { padding: 20px 24px; font-size: 18px; font-weight: 600; border-bottom: 1px solid var(--border); }
+        .menu-section { padding: 16px 24px; border-bottom: 1px solid var(--border); }
+        .menu-section-title { font-size: 11px; text-transform: uppercase; color: var(--text-muted); margin-bottom: 16px; }
+        .tools-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+        .tool-card {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+            padding: 16px;
+            background: var(--surface-light);
+            border-radius: 20px;
+            cursor: pointer;
+            border: 1px solid var(--border);
+        }
+        .tool-card:active { transform: scale(0.96); }
+        .tool-card.active { border-color: var(--accent); background: rgba(59,130,246,0.1); color: var(--accent); }
+        .colors-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 20px; }
+        .color-ball {
+            width: 56px;
+            height: 56px;
+            border-radius: 28px;
+            cursor: pointer;
+            border: 2px solid var(--border);
+        }
+        .color-ball.active { border-color: white; transform: scale(1.05); }
+        .slider-studio { width: 100%; height: 4px; -webkit-appearance: none; background: var(--border); border-radius: 4px; }
+        .slider-studio::-webkit-slider-thumb { -webkit-appearance: none; width: 16px; height: 16px; border-radius: 16px; background: var(--accent); cursor: pointer; }
 
-        /* Action Buttons in right panel */
-        .action-row { display: flex; gap: 8px; margin-top: 8px; }
-        .action-btn { flex: 1; padding: 6px; background: transparent; border: 1px solid var(--border); border-radius: 4px; color: var(--text-muted); font-size: 11px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 4px; }
-        .action-btn:hover { background: var(--bg-hover); color: white; }
-        .action-btn.danger:hover { background: rgba(242, 78, 30, 0.1); color: var(--danger); border-color: var(--danger); }
+        /* ========== CHAT PANEL - 50% DESKTOP, 100% MOBILE ========== */
+        .chat-panel {
+            position: fixed;
+            top: 0;
+            right: 0;
+            bottom: 0;
+            width: 50%;
+            max-width: 33%;
+            background: rgba(20, 20, 26, 0.98);
+            backdrop-filter: blur(24px);
+            border-left: 1px solid var(--border);
+            z-index: 250;
+            transform: translateX(100%);
+            transition: transform 0.3s cubic-bezier(0.2, 0.9, 0.4, 1.1);
+            display: flex;
+            flex-direction: column;
+        }
+        .chat-panel.open { transform: translateX(0); }
+        .chat-header {
+            padding: 20px 24px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .chat-header h3 { font-size: 18px; font-weight: 600; display: flex; align-items: center; gap: 8px; }
+        .close-chat {
+            width: 36px;
+            height: 36px;
+            border-radius: 36px;
+            background: var(--surface-light);
+            border: none;
+            color: var(--text-muted);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .close-chat:active { transform: scale(0.92); }
+        .chat-messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        .chat-message {
+            max-width: 85%;
+            padding: 10px 14px;
+            border-radius: 20px;
+            font-size: 13px;
+            word-break: break-word;
+        }
+        .chat-message.own {
+            background: var(--accent);
+            color: white;
+            align-self: flex-end;
+            border-bottom-right-radius: 4px;
+        }
+        .chat-message.other {
+            background: var(--surface-light);
+            color: var(--text);
+            align-self: flex-start;
+            border-bottom-left-radius: 4px;
+        }
+        .chat-message .sender { font-size: 10px; font-weight: 600; margin-bottom: 4px; color: var(--text-muted); }
+        .chat-message.own .sender { color: rgba(255,255,255,0.7); }
+        .chat-message .time { font-size: 9px; color: var(--text-muted); margin-top: 4px; text-align: right; }
+        .chat-input-area {
+            padding: 16px;
+            border-top: 1px solid var(--border);
+            display: flex;
+            gap: 12px;
+        }
+        .chat-input-area input {
+            flex: 1;
+            padding: 12px 16px;
+            border-radius: 40px;
+            border: 1px solid var(--border);
+            background: var(--bg);
+            color: var(--text);
+            font-size: 14px;
+            outline: none;
+        }
+        .chat-input-area input:focus { border-color: var(--accent); }
+        .chat-input-area button {
+            width: 44px;
+            height: 44px;
+            border-radius: 44px;
+            background: var(--accent);
+            border: none;
+            color: white;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
 
-        /* Modals & Overlays */
-        .modal { position: fixed; inset: 0; background: rgba(0,0,0,0.5); display: none; align-items: center; justify-content: center; z-index: 2000; }
-        .modal.show { display: flex; }
-        .modal-content { background: var(--bg-panel); border: 1px solid var(--border); border-radius: var(--radius); padding: 24px; width: 100%; max-width: 320px; box-shadow: var(--shadow); }
-        .modal-title { font-size: 14px; font-weight: 600; margin-bottom: 16px; }
+        /* ========== OTHER ========== */
+        .student-item { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid var(--border); }
+        .perm-icon { width: 36px; height: 36px; border-radius: 18px; background: var(--surface-light); display: flex; align-items: center; justify-content: center; cursor: pointer; border: 1px solid var(--border); }
+        .perm-icon.active { background: rgba(59,130,246,0.2); color: var(--accent); }
+        .menu-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.5);
+            backdrop-filter: blur(4px);
+            z-index: 150;
+            display: none;
+        }
+        .menu-overlay.show { display: block; }
+        #textInputOverlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.7);
+            backdrop-filter: blur(8px);
+            z-index: 300;
+            display: none;
+            align-items: center;
+            justify-content: center;
+        }
+        #textInputOverlay.show { display: flex; }
+        .text-input-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 32px;
+            padding: 24px;
+            width: 90%;
+            max-width: 400px;
+        }
+        .text-input-card textarea {
+            width: 100%;
+            padding: 16px;
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            color: var(--text);
+            font-size: 16px;
+            resize: none;
+            outline: none;
+            margin-bottom: 16px;
+        }
+        .text-actions { display: flex; gap: 12px; justify-content: flex-end; }
+        .text-actions button { padding: 10px 20px; border-radius: 30px; border: none; cursor: pointer; }
+        #audioContainer { display: none; }
 
-        #textInput { position: fixed; background: var(--bg-canvas); border: 1px solid var(--accent); color: white; font-size: 16px; padding: 8px; border-radius: 4px; outline: none; display: none; z-index: 2000; min-width: 100px; }
-        #textInput.show { display: block; }
-        .input-hint { display: none; } /* Hidden in this version, Enter is implied */
-
-        /* Context Text Toolbar */
-        .text-toolbar { position: fixed; top: 60px; left: 50%; transform: translateX(-50%); background: var(--bg-panel); border: 1px solid var(--border); border-radius: var(--radius); padding: 4px; display: none; gap: 4px; z-index: 2500; }
-        .text-toolbar.show { display: flex; }
-        .text-select { background: var(--bg-canvas); border: 1px solid var(--border); color: white; font-size: 12px; padding: 4px; border-radius: 4px; outline: none; }
-        
-        /* Resize Handles (Invisible logic remains, just styled square) */
-        .resize-handle { position: fixed; width: 10px; height: 10px; background: white; border: 1px solid var(--accent); z-index: 2000; display: none; cursor: pointer; transform: translate(-50%, -50%); }
-        .resize-handle.show { display: block; }
-        .resize-line { position: fixed; background: var(--accent); z-index: 1999; display: none; }
-        .resize-line.show { display: block; }
-        .resize-line.horizontal { height: 1px; width: 100%; transform: translateY(-50%); }
-        .resize-line.vertical { width: 1px; height: 100%; transform: translateX(-50%); }
-
+        /* ========== RESPONSIVE ========== */
         @media (max-width: 768px) {
-            .right-panel { display: none; } /* On mobile, properties hide initially */
-            .left-toolbar { top: auto; bottom: 20px; left: 50%; transform: translateX(-50%); flex-direction: row; width: auto; height: 44px; padding: 6px; }
-            .toolbar-divider { width: 1px; height: 100%; margin: 0 4px; }
+            .chat-panel { width: 100%; max-width: 100%; }
+            .bar-center { display: none; }
+            .side-menu { width: 280px; }
+            .voice-wave-container { padding: 0 4px; }
+            .wave-group { gap: 2px; }
         }
     </style>
 </head>
 <body>
 
+<div id="audioContainer"></div>
+
 <div id="welcome-page">
     <div class="welcome-card">
         <h1>MR Board</h1>
-        <button class="btn btn-primary" onclick="showCreateRoomModal()">Yangi doska yaratish</button>
+        <input type="text" id="userName" class="input-field" placeholder="Ismingiz">
+        <button class="btn btn-primary" id="createRoomBtn"><i data-lucide="plus"></i> Yangi xona</button>
         <div class="divider"></div>
-        <input type="text" id="roomInput" class="input-field" placeholder="Xona ID (masalan: demo)" value="demo">
-        <button class="btn btn-secondary" onclick="showJoinRoomModal()">Xonaga kirish</button>
-    </div>
-</div>
-
-<div class="modal" id="createRoomModal">
-    <div class="modal-content">
-        <div class="modal-title">Yangi doska yaratish</div>
-        <input type="password" id="roomPassword" class="input-field" placeholder="Parol (ixtiyoriy)">
-        <div style="display: flex; gap: 8px; margin-top: 16px;">
-            <button class="btn btn-primary" onclick="createRoomWithPassword()">Yaratish</button>
-            <button class="btn btn-secondary" onclick="closeModal('createRoomModal')">Bekor</button>
-        </div>
-    </div>
-</div>
-
-<div class="modal" id="joinRoomModal">
-    <div class="modal-content">
-        <div class="modal-title">Xonaga kirish: <span id="joinRoomName" style="color:var(--text-muted)"></span></div>
-        <input type="password" id="joinPassword" class="input-field" placeholder="Parol (agar bo'lsa)">
-        <div style="display: flex; gap: 8px; margin-top: 16px;">
-            <button class="btn btn-primary" onclick="joinRoomWithPassword()">Kirish</button>
-            <button class="btn btn-secondary" onclick="closeModal('joinRoomModal')">Bekor</button>
-        </div>
-    </div>
-</div>
-
-<div class="modal" id="passwordModal">
-    <div class="modal-content">
-        <div class="modal-title">Ruxsat so'ralmoqda</div>
-        <input type="password" id="actionPassword" class="input-field" placeholder="Xona paroli">
-        <div style="display: flex; gap: 8px; margin-top: 16px;">
-            <button class="btn btn-primary" onclick="verifyPasswordAndClear()">Tozalash</button>
-            <button class="btn btn-secondary" onclick="closeModal('passwordModal')">Bekor</button>
-        </div>
+        <input type="text" id="roomInput" class="input-field" placeholder="Xona kodi">
+        <button class="btn btn-secondary" id="joinRoomBtn"><i data-lucide="log-in"></i> Xonaga kirish</button>
     </div>
 </div>
 
 <div id="app-page">
-    
-    <div class="figma-panel top-bar">
-        <div class="top-left">
-            <i data-lucide="layout" size="16"></i>
-            <span class="room-badge" onclick="copyRoomId()" title="Nusxalash">
-                <span id="roomDisplay">XONA</span>
-                <i data-lucide="chevron-down" size="12"></i>
-            </span>
-        </div>
-        <div class="top-right">
-            <span class="room-badge" title="Foydalanuvchilar">
-                <i data-lucide="users" size="14"></i> <span id="menuUserCount">0</span>
-            </span>
-            <span class="room-badge" id="zoomDisplay" onclick="centerView()" title="Markazlashtirish">100%</span>
-            <button class="tool-btn" onclick="exportAsPNG()" title="Eksport (PNG)"><i data-lucide="download"></i></button>
-            <button class="tool-btn" onclick="exitToHome()" title="Chiqish"><i data-lucide="log-out"></i></button>
-        </div>
-    </div>
-
-    <div class="figma-panel left-toolbar">
-        <button class="tool-btn active" id="btn-draw" onclick="setTool('draw')" title="Qalam (P)"><i data-lucide="pencil"></i></button>
-        <button class="tool-btn" id="btn-erase" onclick="setTool('erase')" title="O'chirg'ich (E)"><i data-lucide="eraser"></i></button>
-        <button class="tool-btn" id="btn-pan" onclick="setTool('pan')" title="Surish (H)"><i data-lucide="hand"></i></button>
-        <button class="tool-btn" id="btn-text" onclick="setTool('text')" title="Matn (T)"><i data-lucide="type"></i></button>
-        
-        <div class="toolbar-divider"></div>
-        
-        <button class="tool-btn" id="btn-undo" onclick="undo()" title="Orqaga (Ctrl+Z)"><i data-lucide="undo-2"></i></button>
-        <button class="tool-btn" id="btn-redo" onclick="redo()" title="Oldinga (Ctrl+Y)"><i data-lucide="redo-2"></i></button>
-    </div>
-
-    <div class="figma-panel right-panel">
-        <div class="panel-section">
-            <div class="section-title">Design</div>
-            
-            <div class="prop-row">
-                <span>Qalinlik</span>
-                <span id="sizeValue">4</span>
-            </div>
-            <input type="range" id="penSize" class="figma-slider" min="1" max="20" value="4">
-            
-            <div class="prop-row">
-                <span>Shaffoflik</span>
-                <span id="opacityValue">100%</span>
-            </div>
-            <input type="range" id="penOpacity" class="figma-slider" min="0.1" max="1" step="0.1" value="1">
-            
-            <div class="color-grid" id="colorGrid">
-                </div>
-            <input type="color" id="colorPicker" value="#ffffff" style="display: none;">
-            <div id="colorCircle" style="display: none;"></div> </div>
-
-        <div class="panel-section">
-            <div class="section-title">Obyektlar</div>
-            <div class="action-row">
-                <button class="action-btn" onclick="uploadImage()"><i data-lucide="image" size="12"></i> Rasm yuklash</button>
-            </div>
-            <div class="action-row">
-                <button class="action-btn danger" onclick="showClearPasswordModal()"><i data-lucide="trash-2" size="12"></i> Tozalash</button>
-            </div>
-        </div>
-    </div>
-
-    <div class="text-toolbar" id="textToolbar">
-        <select class="text-select" id="fontFamily">
-            <option value="Inter">Inter</option>
-            <option value="Arial">Arial</option>
-            <option value="Times New Roman">Times</option>
-        </select>
-        <input type="number" class="text-select" id="fontSize" value="24" style="width: 50px;">
-        <input type="color" class="text-select" id="textColor" value="#ffffff" style="width: 30px; padding:0; height:24px;">
-        <button class="tool-btn" id="textBold" onclick="toggleTextStyle('bold')"><i data-lucide="bold"></i></button>
-        <button class="tool-btn" id="textItalic" onclick="toggleTextStyle('italic')"><i data-lucide="italic"></i></button>
-        <button class="tool-btn" onclick="applyTextChanges()"><i data-lucide="check"></i></button>
-    </div>
-
-    <input type="text" id="textInput" placeholder="Matn yozing...">
-    <textarea id="textEditArea" style="display:none;"></textarea>
-    <div id="textEditOverlay" style="display:none;"></div>
-    <div id="inputHint" class="input-hint"></div>
-    
-    <div class="resize-handle" id="resizeHandleTL" data-handle="tl"></div>
-    <div class="resize-handle" id="resizeHandleTR" data-handle="tr"></div>
-    <div class="resize-handle" id="resizeHandleBL" data-handle="bl"></div>
-    <div class="resize-handle" id="resizeHandleBR" data-handle="br"></div>
-    <div class="resize-line horizontal" id="resizeLineTop"></div>
-    <div class="resize-line horizontal" id="resizeLineBottom"></div>
-    <div class="resize-line vertical" id="resizeLineLeft"></div>
-    <div class="resize-line vertical" id="resizeLineRight"></div>
-
     <canvas id="canvas"></canvas>
+
+    <div class="top-status">
+        <div class="status-chip" id="roomIdTop">---</div>
+        <div class="status-chip" id="zoomTop">100%</div>
+        <div class="status-chip" id="roleTop">Kuzatuvchi</div>
+    </div>
+
+    <div class="bottom-bar">
+        <div class="bar-left">
+            <div class="color-indicator" id="colorIndicator"></div>
+            <button class="bar-btn" id="toolsBtn"><i data-lucide="brush" size="20"></i></button>
+            <button class="bar-btn" id="colorsBtn"><i data-lucide="palette" size="20"></i></button>
+        </div>
+        <div class="bar-center">
+            <button class="bar-btn" data-tool="draw"><i data-lucide="pencil" size="18"></i></button>
+            <button class="bar-btn" data-tool="erase"><i data-lucide="eraser" size="18"></i></button>
+            <button class="bar-btn" data-tool="pan"><i data-lucide="hand" size="18"></i></button>
+            <button class="bar-btn" data-tool="text"><i data-lucide="type" size="18"></i></button>
+            <div style="width:1px; height:24px; background:var(--border); margin:0 4px;"></div>
+            <button class="bar-btn" id="undoBtn"><i data-lucide="undo-2" size="18"></i></button>
+        </div>
+        <div class="bar-right">
+            <!-- Apple/Spotify Style Voice Waves -->
+            <div class="voice-wave-container" id="voiceWaveContainer">
+                <div class="wave-group" id="waveGroup">
+                    <div class="wave-bar" style="height: 8px;"></div>
+                    <div class="wave-bar" style="height: 12px;"></div>
+                    <div class="wave-bar" style="height: 18px;"></div>
+                    <div class="wave-bar" style="height: 14px;"></div>
+                    <div class="wave-bar" style="height: 10px;"></div>
+                    <div class="wave-bar" style="height: 6px;"></div>
+                    <div class="wave-bar" style="height: 16px;"></div>
+                    <div class="wave-bar" style="height: 20px;"></div>
+                    <div class="wave-bar" style="height: 12px;"></div>
+                    <div class="wave-bar" style="height: 8px;"></div>
+                </div>
+                <span class="voice-level-text" id="voiceLevelText">-∞ dB</span>
+            </div>
+            <button class="bar-btn" id="micBtn"><i data-lucide="mic-off" size="18"></i></button>
+            <button class="bar-btn" id="chatBtn"><i data-lucide="message-square" size="18"></i></button>
+            <button class="bar-btn" id="studentsBtn"><i data-lucide="users" size="18"></i><span id="studentBadge" style="position:absolute; top:-2px; right:-2px; background:var(--accent); font-size:10px; width:16px; height:16px; border-radius:50%; display:flex; align-items:center; justify-content:center;">0</span></button>
+            <button class="bar-btn" id="exportBtn"><i data-lucide="download" size="18"></i></button>
+            <button class="bar-btn" id="exitBtn"><i data-lucide="log-out" size="18"></i></button>
+        </div>
+    </div>
+
+    <div class="menu-overlay" id="menuOverlay"></div>
+
+    <div class="side-menu" id="toolsMenu">
+        <div class="menu-header">Asboblar</div>
+        <div class="menu-section">
+            <div class="tools-grid">
+                <div class="tool-card" data-tool="draw"><i data-lucide="pencil" size="28"></i><span>Qalam</span></div>
+                <div class="tool-card" data-tool="erase"><i data-lucide="eraser" size="28"></i><span>O'chirg'ich</span></div>
+                <div class="tool-card" data-tool="pan"><i data-lucide="hand" size="28"></i><span>Surish</span></div>
+                <div class="tool-card" data-tool="text"><i data-lucide="type" size="28"></i><span>Matn</span></div>
+            </div>
+        </div>
+        <div class="menu-section">
+            <div class="menu-section-title">Qalinlik</div>
+            <input type="range" id="penSizeSlider" class="slider-studio" min="1" max="20" value="4">
+            <div style="text-align:center; margin-top:12px;"><span id="sizeValue">4</span>px</div>
+        </div>
+        <div class="menu-section">
+            <div class="menu-section-title">Amallar</div>
+            <div class="tools-grid">
+                <div class="tool-card" id="undoMenuBtn"><i data-lucide="undo-2" size="24"></i><span>Bekor</span></div>
+                <div class="tool-card" id="uploadImageMenuBtn"><i data-lucide="image" size="24"></i><span>Rasm</span></div>
+                <div class="tool-card" id="centerViewMenuBtn"><i data-lucide="target" size="24"></i><span>Markaz</span></div>
+            </div>
+        </div>
+        <div class="menu-section" id="teacherToolsMenu" style="display:none;">
+            <div class="menu-section-title">O'qituvchi</div>
+            <div class="tools-grid">
+                <div class="tool-card" id="clearBoardMenuBtn"><i data-lucide="trash-2" size="24"></i><span>Tozalash</span></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="side-menu" id="colorsMenu">
+        <div class="menu-header">Ranglar</div>
+        <div class="menu-section">
+            <div class="colors-grid" id="colorGridMenu"></div>
+            <input type="color" id="colorPickerMenu" value="#3b82f6" style="width:100%; height:48px; border-radius:40px; margin-top:12px;">
+        </div>
+    </div>
+
+    <div class="side-menu" id="studentsMenu">
+        <div class="menu-header">O'quvchilar</div>
+        <div class="menu-section"><div id="studentListMenu"></div></div>
+    </div>
+
+    <!-- CHAT PANEL - 50% DESKTOP, 100% MOBILE -->
+    <div class="chat-panel" id="chatPanel">
+        <div class="chat-header">
+            <h3><i data-lucide="message-square" size="18"></i> Guruh chat</h3>
+            <button class="close-chat" id="closeChatBtn"><i data-lucide="x" size="18"></i></button>
+        </div>
+        <div class="chat-messages" id="chatMessages"></div>
+        <div class="chat-input-area">
+            <input type="text" id="chatInput" placeholder="Xabar yozing..." maxlength="500">
+            <button id="sendChatBtn"><i data-lucide="send" size="18"></i></button>
+        </div>
+    </div>
+
+    <div id="textInputOverlay">
+        <div class="text-input-card">
+            <textarea id="textInputArea" rows="3" placeholder="Matnni kiriting..."></textarea>
+            <div class="text-actions">
+                <button class="btn-secondary" id="cancelTextBtn">Bekor</button>
+                <button class="btn-primary" id="addTextBtn">Qo'shish</button>
+            </div>
+        </div>
+    </div>
 </div>
 
 <script>
-    // ==================== FIREBASE ====================
+(function() {
+    // ========== FIREBASE ==========
     const firebaseConfig = {
         apiKey: "AIzaSyDvbG7fChb2LN_nJhwTF1iMKMXNPcuGk5Y",
         databaseURL: "https://tictactoe-26434-default-rtdb.firebaseio.com",
@@ -318,442 +557,495 @@
     };
     if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
-    
     lucide.createIcons();
 
-    // ==================== LOCAL STORAGE KEYS ====================
-    const STORAGE_KEYS = {
-        PEN_SIZE: 'mr_board_pen_size', PEN_OPACITY: 'mr_board_pen_opacity',
-        PEN_TYPE: 'mr_board_pen_type', COLOR: 'mr_board_color',
-        ZOOM: 'mr_board_zoom', OFFSET_X: 'mr_board_offset_x', OFFSET_Y: 'mr_board_offset_y',
-        TEXT_SIZE: 'mr_board_text_size', TEXT_FONT: 'mr_board_text_font',
-        TEXT_COLOR: 'mr_board_text_color', TEXT_BOLD: 'mr_board_text_bold', TEXT_ITALIC: 'mr_board_text_italic'
-    };
-
-    const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-    const touchSettings = { minDistance: isMobile ? 5 : 2, doubleTapDelay: 300 };
-
-    const canvas = document.getElementById('canvas');
-    const ctx = canvas.getContext('2d', { alpha: true, desynchronized: true });
-    const imageCache = new Map();
-
-    const resizeHandles = {
-        tl: document.getElementById('resizeHandleTL'), tr: document.getElementById('resizeHandleTR'),
-        bl: document.getElementById('resizeHandleBL'), br: document.getElementById('resizeHandleBR')
-    };
-    const resizeLines = {
-        top: document.getElementById('resizeLineTop'), bottom: document.getElementById('resizeLineBottom'),
-        left: document.getElementById('resizeLineLeft'), right: document.getElementById('resizeLineRight')
-    };
-
-    // ==================== STATE (Aynan o'zingizniki) ====================
-    const state = {
-        userId: 'user_' + Math.random().toString(36).substr(2, 8),
+    // ========== STATE ==========
+    const State = {
+        userId: 'u_' + Math.random().toString(36).substr(2, 8),
+        userName: '',
+        roomId: '',
+        roomRef: null,
+        isTeacher: false,
+        canDraw: false,
+        canSpeak: false,
         tool: 'draw',
-        isDrawing: false, isDraggingImage: false, isResizingImage: false,
-        draggedImageId: null, resizingImageId: null, resizeHandle: null,
-        resizeStart: { x: 0, y: 0 }, resizeStartRect: { x: 0, y: 0, width: 0, height: 0 },
-        dragOffset: { x: 0, y: 0 },
-        scale: parseFloat(localStorage.getItem(STORAGE_KEYS.ZOOM)) || 1,
-        offset: { x: parseFloat(localStorage.getItem(STORAGE_KEYS.OFFSET_X)) || 0, y: parseFloat(localStorage.getItem(STORAGE_KEYS.OFFSET_Y)) || 0 },
-        elements: [], activePaths: {}, cursors: {},
-        roomId: '', roomRef: null, boardColor: '#1e1e1e',
-        hasPassword: false, roomPassword: '',
-        lastMouse: { x: 0, y: 0 }, mousePos: { x: 0, y: 0 },
-        userCount: 0, history: [], historyIndex: -1,
-        lastTap: 0, touchCount: 0, pinchInitialDistance: 0,
-        pendingText: null, selectedImageId: null, saveMode: false
+        color: '#3b82f6',
+        penSize: 4,
+        camera: { x: 0, y: 0, zoom: 1.2 },
+        isDrawing: false,
+        lastPoint: { x: 0, y: 0 },
+        elements: [],
+        activePaths: {},
+        students: {},
+        cursors: {},
+        rc: null,
+        textPosition: null,
+        audioLevel: 0
     };
 
-    const penSettings = {
-        size: parseInt(localStorage.getItem(STORAGE_KEYS.PEN_SIZE)) || 4,
-        opacity: parseFloat(localStorage.getItem(STORAGE_KEYS.PEN_OPACITY)) || 1,
-        type: 0, // Faqat oddiy qalam
-        color: localStorage.getItem(STORAGE_KEYS.COLOR) || '#ffffff'
-    };
+    const presetColors = ['#ffffff', '#000000', '#ef4444', '#f59e0b', '#3b82f6', '#22c55e', '#a855f7', '#ec489a'];
 
-    const textState = {
-        currentFont: localStorage.getItem(STORAGE_KEYS.TEXT_FONT) || 'Inter',
-        currentSize: parseInt(localStorage.getItem(STORAGE_KEYS.TEXT_SIZE)) || 24,
-        currentColor: localStorage.getItem(STORAGE_KEYS.TEXT_COLOR) || '#ffffff',
-        currentBold: localStorage.getItem(STORAGE_KEYS.TEXT_BOLD) === 'true',
-        currentItalic: localStorage.getItem(STORAGE_KEYS.TEXT_ITALIC) === 'true',
-        currentAlign: 'left', editingTextId: null, editingElement: null
-    };
+    // ========== CANVAS ==========
+    const canvas = document.getElementById('canvas');
+    const ctx = canvas.getContext('2d');
 
-    // ==================== UI SETUP (Figma Style) ====================
-    const colors = ['#ffffff', '#000000', '#f24e1e', '#fbbc04', '#0d99ff', '#10b981'];
-    const colorGrid = document.getElementById('colorGrid');
-    colors.forEach(c => {
-        const div = document.createElement('div');
-        div.className = `color-swatch ${penSettings.color === c ? 'active' : ''}`;
-        div.style.background = c;
-        div.onclick = () => {
-            penSettings.color = c;
-            localStorage.setItem(STORAGE_KEYS.COLOR, c);
-            document.querySelectorAll('.color-swatch').forEach(s => s.classList.remove('active'));
-            div.classList.add('active');
-        };
-        colorGrid.appendChild(div);
-    });
-
-    document.getElementById('penSize').addEventListener('input', (e) => {
-        penSettings.size = parseInt(e.target.value);
-        document.getElementById('sizeValue').innerText = penSettings.size;
-        localStorage.setItem(STORAGE_KEYS.PEN_SIZE, penSettings.size);
-    });
-
-    document.getElementById('penOpacity').addEventListener('input', (e) => {
-        penSettings.opacity = parseFloat(e.target.value);
-        document.getElementById('opacityValue').innerText = Math.round(penSettings.opacity * 100) + '%';
-        localStorage.setItem(STORAGE_KEYS.PEN_OPACITY, penSettings.opacity);
-    });
-
-    function updateUndoRedoUI() {
-        const undoBtn = document.getElementById('btn-undo');
-        const redoBtn = document.getElementById('btn-redo');
-        if(undoBtn) undoBtn.classList.toggle('disabled', state.historyIndex <= 0);
-        if(redoBtn) redoBtn.classList.toggle('disabled', state.historyIndex >= state.history.length - 1);
+    function resizeCanvas() {
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+        render();
     }
+    window.addEventListener('resize', resizeCanvas);
 
-    // ==================== TEXT FUNCTIONS ====================
-    function startTextPlacement() {
-        state.pendingText = true;
-        canvas.style.cursor = 'text';
-        document.getElementById('textToolbar').classList.add('show');
-    }
+    function screenToWorld(x, y) { return { x: (x - State.camera.x) / State.camera.zoom, y: (y - State.camera.y) / State.camera.zoom }; }
+    function worldToScreen(x, y) { return { x: x * State.camera.zoom + State.camera.x, y: y * State.camera.zoom + State.camera.y }; }
 
-    function hideTextToolbar() { document.getElementById('textToolbar').classList.remove('show'); }
-
-    function toggleTextStyle(style) {
-        if(style === 'bold') textState.currentBold = !textState.currentBold;
-        if(style === 'italic') textState.currentItalic = !textState.currentItalic;
-        document.getElementById('textBold').classList.toggle('active', textState.currentBold);
-        document.getElementById('textItalic').classList.toggle('active', textState.currentItalic);
-    }
-
-    function applyTextChanges() {
-        textState.currentFont = document.getElementById('fontFamily').value;
-        textState.currentSize = parseInt(document.getElementById('fontSize').value) || 24;
-        textState.currentColor = document.getElementById('textColor').value;
-        hideTextToolbar();
-    }
-
-    function showTextInput(x, y, world) {
-        const input = document.getElementById('textInput');
-        input.classList.add('show');
-        input.style.left = x + 'px';
-        input.style.top = y + 'px';
-        input.value = ''; input.focus();
-        input.dataset.x = world.x; input.dataset.y = world.y;
-        
-        const onKeyDown = (e) => {
-            if (e.key === 'Enter') {
-                e.preventDefault();
-                if (input.value.trim()) {
-                    saveText(input.value.trim(), { x: parseFloat(input.dataset.x), y: parseFloat(input.dataset.y) });
-                    input.classList.remove('show');
-                    document.removeEventListener('keydown', onKeyDown);
-                }
-            }
-        };
-        input.addEventListener('keydown', onKeyDown);
-        input.addEventListener('blur', () => { setTimeout(() => { input.classList.remove('show'); document.removeEventListener('keydown', onKeyDown); }, 200); }, { once: true });
-    }
-
-    function saveText(text, world) {
-        const textElement = {
-            id: 'txt_' + Date.now(), type: 'text', text: text, x: world.x, y: world.y,
-            size: textState.currentSize, font: textState.currentFont, bold: textState.currentBold,
-            italic: textState.currentItalic, align: textState.currentAlign, color: textState.currentColor,
-            userId: state.userId
-        };
-        const newRef = state.roomRef.child('elements').push(textElement);
-        textElement.key = newRef.key;
-        state.pendingText = null; hideTextToolbar();
-    }
-
-    // ==================== IMAGE & RESIZE (Aynan shu) ====================
-    function uploadImage() {
-        const input = document.createElement('input'); input.type = 'file'; input.accept = 'image/*';
-        input.onchange = (e) => {
-            const file = e.target.files[0]; if (!file || file.size > 5*1024*1024) return;
-            const reader = new FileReader();
-            reader.onload = (event) => {
-                const base64 = event.target.result; const img = new Image();
-                img.onload = () => {
-                    const world = getWorld(canvas.width/2, canvas.height/2);
-                    let w = img.width, h = img.height, max = 400;
-                    if(w > h && w > max) { h = (h/w)*max; w = max; } else if(h > max) { w = (w/h)*max; h = max; }
-                    w = w/state.scale; h = h/state.scale;
-                    
-                    const el = { id: 'img_'+Date.now(), type: 'image', data: base64, x: world.x - w/2, y: world.y - h/2, width: w, height: h, userId: state.userId };
-                    state.roomRef.child('elements').push(el);
-                };
-                img.src = base64;
-            };
-            reader.readAsDataURL(file);
-        };
-        input.click();
-    }
-
-    function selectImage(id) { state.selectedImageId = id; updateResizeHandles(); }
-
-    function updateResizeHandles() {
-        if (!state.selectedImageId) return hideResizeHandles();
-        const image = state.elements.find(el => el.id === state.selectedImageId && el.type === 'image');
-        if (!image) return hideResizeHandles();
-        const sX = image.x * state.scale + state.offset.x, sY = image.y * state.scale + state.offset.y;
-        const sW = image.width * state.scale, sH = image.height * state.scale;
-        
-        resizeHandles.tl.style.left = sX + 'px'; resizeHandles.tl.style.top = sY + 'px';
-        resizeHandles.tr.style.left = (sX + sW) + 'px'; resizeHandles.tr.style.top = sY + 'px';
-        resizeHandles.bl.style.left = sX + 'px'; resizeHandles.bl.style.top = (sY + sH) + 'px';
-        resizeHandles.br.style.left = (sX + sW) + 'px'; resizeHandles.br.style.top = (sY + sH) + 'px';
-        Object.values(resizeHandles).forEach(h => h.classList.add('show'));
-    }
-
-    function hideResizeHandles() {
-        Object.values(resizeHandles).forEach(h => h.classList.remove('show'));
-        Object.values(resizeLines).forEach(l => l.classList.remove('show'));
-    }
-
-    function updateResizeLines(x, y, w, h) {
-        const sX = x * state.scale + state.offset.x, sY = y * state.scale + state.offset.y;
-        const sW = w * state.scale, sH = h * state.scale;
-        resizeLines.top.style.top = sY + 'px'; resizeLines.bottom.style.top = (sY + sH) + 'px';
-        resizeLines.left.style.left = sX + 'px'; resizeLines.right.style.left = (sX + sW) + 'px';
-        Object.values(resizeLines).forEach(l => l.classList.add('show'));
-    }
-
-    function getPenProperties() {
-        const hex = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(penSettings.color);
-        const rgb = hex ? { r: parseInt(hex[1], 16), g: parseInt(hex[2], 16), b: parseInt(hex[3], 16) } : { r:255, g:255, b:255 };
-        return { size: penSettings.size, finalColor: `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, ${penSettings.opacity})` };
-    }
-
-    function resize() { canvas.width = window.innerWidth; canvas.height = window.innerHeight; scheduleRender(); if(state.selectedImageId) updateResizeHandles(); }
-    window.addEventListener('resize', resize);
-
-    function getWorld(x, y) { return { x: (x - state.offset.x) / state.scale, y: (y - state.offset.y) / state.scale }; }
-
-    // ==================== RENDER (Aynan shu) ====================
-    let rafId = null;
-    function scheduleRender() { if (!rafId) rafId = requestAnimationFrame(() => { render(); rafId = null; }); }
-
-    function render() {
-        ctx.setTransform(1, 0, 0, 1, 0, 0);
-        ctx.fillStyle = state.boardColor;
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
-        
-        ctx.setTransform(state.scale, 0, 0, state.scale, state.offset.x, state.offset.y);
-        
-        state.elements.forEach(el => {
-            if (el.type === 'path') drawPath(el.points, el.color, el.size);
-            else if (el.type === 'text') {
-                ctx.save();
-                ctx.font = `${el.bold?'bold ':''}${el.italic?'italic ':''}${el.size}px '${el.font || 'Inter'}'`;
-                ctx.fillStyle = el.color; ctx.textAlign = el.align || 'left';
-                ctx.fillText(el.text, el.x, el.y);
-                ctx.restore();
-            } else if (el.type === 'image') {
-                if (imageCache.has(el.id)) ctx.drawImage(imageCache.get(el.id), el.x, el.y, el.width, el.height);
-                else { const img = new Image(); img.onload = () => { imageCache.set(el.id, img); ctx.drawImage(img, el.x, el.y, el.width, el.height); }; img.src = el.data; }
-            }
-            if (el.id === state.selectedImageId) {
-                ctx.save(); ctx.strokeStyle = '#0d99ff'; ctx.lineWidth = 2 / state.scale;
-                ctx.strokeRect(el.x, el.y, el.width, el.height); ctx.restore();
-            }
-        });
-        
-        Object.values(state.activePaths).forEach(p => { if (p.points?.length > 1) drawPath(p.points, p.color, p.size); });
-        
-        // Cursors
-        ctx.setTransform(1, 0, 0, 1, 0, 0);
-        Object.entries(state.cursors).forEach(([uid, data]) => {
-            if (uid === state.userId || !data.x) return;
-            const sx = data.x * state.scale + state.offset.x, sy = data.y * state.scale + state.offset.y;
-            ctx.beginPath(); ctx.moveTo(sx, sy); ctx.lineTo(sx+12, sy+12); ctx.lineTo(sx+4, sy+12); ctx.lineTo(sx, sy+18); ctx.closePath();
-            ctx.fillStyle = '#0d99ff'; ctx.fill(); ctx.strokeStyle='white'; ctx.stroke();
-        });
-        
-        document.getElementById('zoomDisplay').innerText = Math.round(state.scale * 100) + '%';
-        localStorage.setItem(STORAGE_KEYS.ZOOM, state.scale); localStorage.setItem(STORAGE_KEYS.OFFSET_X, state.offset.x); localStorage.setItem(STORAGE_KEYS.OFFSET_Y, state.offset.y);
-    }
-
-    function drawPath(points, color, width) {
-        if (points.length < 2) return;
-        ctx.beginPath(); ctx.strokeStyle = color; ctx.lineWidth = width; ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+    function drawPath(points, color, size) {
+        if (!points || points.length < 2) return;
+        ctx.beginPath();
+        ctx.strokeStyle = color;
+        ctx.lineWidth = size;
+        ctx.lineCap = 'round';
+        ctx.lineJoin = 'round';
         ctx.moveTo(points[0].x, points[0].y);
-        for (let i = 1; i < points.length - 1; i++) ctx.quadraticCurveTo(points[i].x, points[i].y, (points[i].x + points[i + 1].x)/2, (points[i].y + points[i + 1].y)/2);
-        ctx.lineTo(points[points.length - 1].x, points[points.length - 1].y);
+        for (let i = 1; i < points.length; i++) ctx.lineTo(points[i].x, points[i].y);
         ctx.stroke();
     }
 
-    // ==================== HISTORY ====================
-    function addToHistory() {
-        if (state.historyIndex < state.history.length - 1) state.history = state.history.slice(0, state.historyIndex + 1);
-        state.history.push(JSON.parse(JSON.stringify(state.elements)));
-        state.historyIndex++; updateUndoRedoUI();
+    function render() {
+        ctx.setTransform(1, 0, 0, 1, 0, 0);
+        ctx.fillStyle = '#0a0a0f';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        
+        ctx.strokeStyle = '#1f1f24';
+        ctx.lineWidth = 1;
+        const gs = 40 * State.camera.zoom;
+        const ox = State.camera.x % gs;
+        const oy = State.camera.y % gs;
+        for (let x = ox; x < canvas.width; x += gs) { ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, canvas.height); ctx.stroke(); }
+        for (let y = oy; y < canvas.height; y += gs) { ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(canvas.width, y); ctx.stroke(); }
+        
+        ctx.setTransform(State.camera.zoom, 0, 0, State.camera.zoom, State.camera.x, State.camera.y);
+        
+        State.elements.forEach(el => {
+            if (el.type === 'path' && el.points?.length > 1) drawPath(el.points, el.color, el.size);
+            else if (el.type === 'text') {
+                ctx.font = `600 ${el.size || 24}px ${el.font || 'Inter'}`;
+                ctx.fillStyle = el.color || '#ffffff';
+                ctx.fillText(el.text, el.x, el.y);
+            }
+            else if (el.type === 'image' && el.data) { const img = new Image(); img.src = el.data; ctx.drawImage(img, el.x, el.y, el.width, el.height); }
+        });
+        
+        Object.values(State.activePaths).forEach(p => { if (p?.points?.length > 1) drawPath(p.points, p.color, p.size); });
+        
+        ctx.setTransform(1, 0, 0, 1, 0, 0);
+        Object.entries(State.cursors).forEach(([uid, data]) => {
+            if (uid === State.userId || !data || typeof data.x !== 'number') return;
+            const pos = worldToScreen(data.x, data.y);
+            ctx.beginPath(); ctx.arc(pos.x, pos.y, 5, 0, Math.PI*2);
+            ctx.fillStyle = data.isTeacher ? '#3b82f6' : '#ef4444';
+            ctx.fill();
+        });
+        
+        document.getElementById('zoomTop').innerText = Math.round(State.camera.zoom * 100) + '%';
     }
-    function undo() { if (state.historyIndex > 0) { state.historyIndex--; state.elements = JSON.parse(JSON.stringify(state.history[state.historyIndex])); state.roomRef.child('elements').set(state.elements); scheduleRender(); updateUndoRedoUI(); } }
-    function redo() { if (state.historyIndex < state.history.length - 1) { state.historyIndex++; state.elements = JSON.parse(JSON.stringify(state.history[state.historyIndex])); state.roomRef.child('elements').set(state.elements); scheduleRender(); updateUndoRedoUI(); } }
+    function renderLoop() { render(); requestAnimationFrame(renderLoop); }
 
-    // ==================== POINTER LOGIC (Aynan shu) ====================
-    function findElementAt(x, y) {
-        const w = getWorld(x, y);
-        for (let i = state.elements.length - 1; i >= 0; i--) {
-            const el = state.elements[i];
-            if (el.type === 'image' && w.x >= el.x && w.x <= el.x + el.width && w.y >= el.y && w.y <= el.y + el.height) return { element: el, index: i };
-        } return null;
-    }
+    // ========== AUDIO WITH APPLE/SPOTIFY STYLE WAVES ==========
+    const Audio = {
+        stream: null,
+        audioContext: null,
+        analyser: null,
+        source: null,
+        animationId: null,
+        
+        async init() {
+            try {
+                this.stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                this.setupVisualizer();
+                this.updateUI();
+            } catch(e) { console.log("Mikrofon ruxsati kerak"); }
+        },
+        
+        setupVisualizer() {
+            if (this.audioContext) this.audioContext.close();
+            this.audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            this.analyser = this.audioContext.createAnalyser();
+            this.analyser.fftSize = 256;
+            this.source = this.audioContext.createMediaStreamSource(this.stream);
+            this.source.connect(this.analyser);
+            
+            const dataArray = new Uint8Array(this.analyser.frequencyBinCount);
+            const waveBars = document.querySelectorAll('.wave-bar');
+            const levelText = document.getElementById('voiceLevelText');
+            const container = document.getElementById('voiceWaveContainer');
+            
+            const updateWaves = () => {
+                if (!State.canSpeak || !this.analyser) {
+                    waveBars.forEach(bar => bar.style.height = '4px');
+                    if (levelText) levelText.innerText = 'muted';
+                    if (container) container.classList.remove('mic-active');
+                    this.animationId = requestAnimationFrame(updateWaves);
+                    return;
+                }
+                
+                this.analyser.getByteFrequencyData(dataArray);
+                let sum = 0;
+                for (let i = 0; i < dataArray.length; i++) sum += dataArray[i];
+                let avg = sum / dataArray.length;
+                let db = Math.round(20 * Math.log10(avg / 255 + 0.1));
+                if (db < -60) db = -60;
+                if (db > 0) db = 0;
+                
+                State.audioLevel = avg;
+                const normalizedLevel = Math.min(1, avg / 180);
+                const levelPercent = Math.round(normalizedLevel * 100);
+                
+                if (levelText) {
+                    if (avg < 5) levelText.innerText = '-∞ dB';
+                    else if (db <= -40) levelText.innerText = `${db} dB`;
+                    else if (db <= -20) levelText.innerText = `${db} dB`;
+                    else levelText.innerText = `${db} dB`;
+                }
+                
+                if (container) {
+                    if (avg > 15) container.classList.add('mic-active');
+                    else container.classList.remove('mic-active');
+                }
+                
+                waveBars.forEach((bar, index) => {
+                    const factor = 0.5 + (index / waveBars.length) * 1.5;
+                    let height = 4 + (normalizedLevel * 28 * factor);
+                    height = Math.min(32, Math.max(4, height));
+                    bar.style.height = height + 'px';
+                });
+                
+                this.animationId = requestAnimationFrame(updateWaves);
+            };
+            
+            updateWaves();
+        },
+        
+        updateUI() {
+            if (this.stream) {
+                const track = this.stream.getAudioTracks()[0];
+                if (track) track.enabled = State.canSpeak;
+                const micBtn = document.getElementById('micBtn');
+                if (micBtn) {
+                    const icon = micBtn.querySelector('i');
+                    if (State.canSpeak) {
+                        icon.setAttribute('data-lucide', 'mic');
+                        micBtn.style.color = '#22c55e';
+                    } else {
+                        icon.setAttribute('data-lucide', 'mic-off');
+                        micBtn.style.color = '';
+                    }
+                    lucide.createIcons();
+                }
+            }
+        },
+        
+        stop() {
+            if (this.animationId) cancelAnimationFrame(this.animationId);
+            if (this.audioContext) this.audioContext.close();
+        }
+    };
 
-    canvas.addEventListener('mousedown', handleStart); canvas.addEventListener('touchstart', handleStart);
-    window.addEventListener('mousemove', handleMove); window.addEventListener('touchmove', handleMove, { passive: false });
-    window.addEventListener('mouseup', handleEnd); window.addEventListener('touchend', handleEnd);
+    // ========== CHAT ==========
+    const Chat = {
+        sendMessage() {
+            const input = document.getElementById('chatInput');
+            const text = input.value.trim();
+            if (!text || !State.roomRef) return;
+            State.roomRef.child('chat').push({
+                id: Date.now(),
+                userId: State.userId,
+                userName: State.userName,
+                text: text,
+                time: new Date().toLocaleTimeString(),
+                isTeacher: State.isTeacher
+            });
+            input.value = '';
+        },
+        addMessage(msg) {
+            const container = document.getElementById('chatMessages');
+            const div = document.createElement('div');
+            div.className = `chat-message ${msg.userId === State.userId ? 'own' : 'other'}`;
+            div.innerHTML = `<div class="sender">${msg.userName} ${msg.isTeacher ? '👑' : ''}</div><div>${msg.text}</div><div class="time">${msg.time}</div>`;
+            container.appendChild(div);
+            container.scrollTop = container.scrollHeight;
+        },
+        listen() {
+            if (!State.roomRef) return;
+            State.roomRef.child('chat').on('child_added', (snap) => { this.addMessage(snap.val()); });
+        }
+    };
 
-    Object.entries(resizeHandles).forEach(([h, el]) => { el.addEventListener('mousedown', e => handleRStart(e, h)); el.addEventListener('touchstart', e => handleRStart(e, h)); });
+    // ========== DATABASE ==========
+    const DB = {
+        init(id) {
+            State.roomId = id;
+            State.roomRef = db.ref('mr_rooms_final/' + id);
+            document.getElementById('welcome-page').style.display = 'none';
+            document.getElementById('app-page').style.display = 'block';
+            document.getElementById('roomIdTop').innerText = id;
+            if (State.isTeacher) { State.canDraw = true; State.canSpeak = true; }
+            this.register();
+            this.listen();
+            resizeCanvas();
+            renderLoop();
+            Audio.init();
+            Chat.listen();
+            UI.updateUI();
+        },
+        register() {
+            const ref = State.roomRef.child('students').child(State.userId);
+            ref.onDisconnect().remove();
+            ref.set({ id: State.userId, name: State.userName, isTeacher: State.isTeacher, canDraw: State.canDraw, canSpeak: State.canSpeak });
+        },
+        listen() {
+            State.roomRef.child('elements').on('value', snap => { State.elements = Object.values(snap.val() || {}); });
+            State.roomRef.child('active').on('value', snap => { State.activePaths = snap.val() || {}; });
+            State.roomRef.child('students').on('value', snap => {
+                State.students = snap.val() || {};
+                if (!State.isTeacher && State.students[State.userId]) {
+                    const me = State.students[State.userId];
+                    if (State.canDraw !== me.canDraw) State.canDraw = me.canDraw;
+                    if (State.canSpeak !== me.canSpeak) { State.canSpeak = me.canSpeak; Audio.updateUI(); }
+                    UI.updateUI();
+                }
+                UI.renderStudents();
+                const count = Object.values(State.students).filter(s => !s.isTeacher).length;
+                document.getElementById('studentBadge').innerText = count;
+            });
+            State.roomRef.child('presence').on('value', snap => { State.cursors = snap.val() || {}; });
+            if (!State.isTeacher) State.roomRef.child('camera').on('value', snap => { const cam = snap.val(); if (cam && !State.canDraw) State.camera = cam; });
+        },
+        setActive(id, data) { State.roomRef.child('active/' + id).set(data); },
+        updateActive(id, points) { State.roomRef.child('active/' + id).update({ points }); },
+        removeActive(id) { State.roomRef.child('active/' + id).remove(); },
+        saveElement(el) { State.roomRef.child('elements').push(el); },
+        updateCursor(pos) { State.roomRef.child('presence/' + State.userId).set({ x: pos.x, y: pos.y, name: State.userName, isTeacher: State.isTeacher }); },
+        syncCamera() { State.roomRef.child('camera').set(State.camera); },
+        clearBoard() { if (confirm("Doskani tozalansinmi?")) State.roomRef.child('elements').remove(); },
+        togglePerm(id, type, val) { State.roomRef.child('students/' + id).update({ [type]: val }); }
+    };
 
-    function handleRStart(e, handle) {
-        e.preventDefault(); e.stopPropagation(); if(!state.selectedImageId) return;
-        const img = state.elements.find(el => el.id === state.selectedImageId); if(!img) return;
-        state.isResizingImage = true; state.resizingImageId = img.id; state.resizeHandle = handle;
-        state.resizeStart = { x: e.clientX || e.touches[0].clientX, y: e.clientY || e.touches[0].clientY };
-        state.resizeStartRect = { x: img.x, y: img.y, width: img.width, height: img.height };
-    }
+    // ========== CANVAS ACTIONS ==========
+    const CanvasActions = {
+        setTool(tool) {
+            State.tool = tool;
+            document.querySelectorAll('[data-tool]').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll(`[data-tool="${tool}"]`).forEach(el => el.classList.add('active'));
+            if (tool === 'text') { UI.openTextInput(); }
+        },
+        addText() {
+            const text = document.getElementById('textInputArea').value.trim();
+            if (text && State.textPosition) {
+                DB.saveElement({ type: 'text', id: 'txt_' + Date.now(), text: text, x: State.textPosition.x, y: State.textPosition.y, size: 24, color: State.color, font: 'Inter' });
+                State.textPosition = null;
+            }
+            UI.closeTextInput();
+        },
+        centerView() { State.camera = { x: 0, y: 0, zoom: 1.2 }; if (State.isTeacher) DB.syncCamera(); },
+        uploadImage() {
+            const input = document.createElement('input');
+            input.type = 'file';
+            input.accept = 'image/*';
+            input.onchange = (e) => {
+                const file = e.target.files[0];
+                if (!file || file.size > 5e6) return alert("Rasm 5MB dan kichik bo'lishi kerak");
+                const reader = new FileReader();
+                reader.onload = (ev) => {
+                    const img = new Image();
+                    img.onload = () => {
+                        const center = screenToWorld(window.innerWidth / 2, window.innerHeight / 2);
+                        const w = Math.min(300, img.width) / State.camera.zoom;
+                        const h = (img.height / img.width) * w;
+                        DB.saveElement({ type: 'image', id: 'img_' + Date.now(), data: ev.target.result, x: center.x - w/2, y: center.y - h/2, width: w, height: h });
+                    };
+                    img.src = ev.target.result;
+                };
+                reader.readAsDataURL(file);
+            };
+            input.click();
+        },
+        exportPNG() { const a = document.createElement('a'); a.download = 'mr-board.png'; a.href = canvas.toDataURL(); a.click(); },
+        undo() { if (State.roomRef) State.roomRef.child('elements').orderByKey().limitToLast(1).once('value', snap => { snap.forEach(c => c.ref.remove()); }); }
+    };
 
+    // ========== UI ==========
+    const UI = {
+        toggleMic() {
+            if (!State.isTeacher && !State.canSpeak) { alert("O'qituvchi ruxsat bermagan"); return; }
+            State.canSpeak = !State.canSpeak;
+            if (Audio.stream) { const track = Audio.stream.getAudioTracks()[0]; if (track) track.enabled = State.canSpeak; }
+            if (State.isTeacher) DB.togglePerm(State.userId, 'canSpeak', State.canSpeak);
+            Audio.updateUI();
+        },
+        openMenu(name) {
+            document.querySelectorAll('.side-menu').forEach(m => m.classList.remove('open'));
+            document.getElementById('menuOverlay').classList.add('show');
+            document.getElementById(name + 'Menu').classList.add('open');
+        },
+        closeAll() {
+            document.querySelectorAll('.side-menu').forEach(m => m.classList.remove('open'));
+            document.getElementById('menuOverlay').classList.remove('show');
+        },
+        openChat() { document.getElementById('chatPanel').classList.add('open'); },
+        closeChat() { document.getElementById('chatPanel').classList.remove('open'); },
+        openTextInput() { document.getElementById('textInputOverlay').classList.add('show'); },
+        closeTextInput() { document.getElementById('textInputOverlay').classList.remove('show'); document.getElementById('textInputArea').value = ''; },
+        updateUI() {
+            document.getElementById('studentsBtn').style.display = State.isTeacher ? 'flex' : 'none';
+            document.getElementById('teacherToolsMenu').style.display = State.isTeacher ? 'block' : 'none';
+            const role = document.getElementById('roleTop');
+            if (State.isTeacher) role.innerText = '👑 O\'qituvchi';
+            else if (State.canDraw) role.innerText = '✏️ Chizish ruxsati bor';
+            else role.innerText = '👁️ Kuzatuvchi';
+        },
+        renderStudents() {
+            const container = document.getElementById('studentListMenu');
+            if (!container) return;
+            container.innerHTML = '';
+            Object.values(State.students).forEach(st => {
+                if (st.isTeacher) return;
+                const drawActive = st.canDraw ? 'active' : '';
+                const speakActive = st.canSpeak ? 'active' : '';
+                container.innerHTML += `<div class="student-item"><span>${st.name}</span><div style="display:flex; gap:8px;"><div class="perm-icon ${drawActive}" data-draw="${st.id}"><i data-lucide="pen-tool" size="14"></i></div><div class="perm-icon ${speakActive}" data-speak="${st.id}"><i data-lucide="mic" size="14"></i></div></div></div>`;
+            });
+            lucide.createIcons();
+            document.querySelectorAll('[data-draw]').forEach(el => { el.onclick = () => DB.togglePerm(el.dataset.draw, 'canDraw', !State.students[el.dataset.draw]?.canDraw); });
+            document.querySelectorAll('[data-speak]').forEach(el => { el.onclick = () => DB.togglePerm(el.dataset.speak, 'canSpeak', !State.students[el.dataset.speak]?.canSpeak); });
+        }
+    };
+
+    // ========== POINTER EVENTS ==========
     function handleStart(e) {
-        const cx = e.clientX || e.touches?.[0]?.clientX; const cy = e.clientY || e.touches?.[0]?.clientY;
-        if(e.target.classList.contains('resize-handle')) return;
-        
-        if(state.tool === 'text') return showTextInput(cx, cy, getWorld(cx, cy));
-        
-        const hit = findElementAt(cx, cy);
-        if(hit && hit.element.type === 'image') {
-            selectImage(hit.element.id); state.isDraggingImage = true; state.draggedImageId = hit.element.id;
-            const w = getWorld(cx, cy); state.dragOffset = { x: w.x - hit.element.x, y: w.y - hit.element.y }; return;
-        } else if(state.selectedImageId) { state.selectedImageId = null; hideResizeHandles(); }
-
-        state.isDrawing = true; const w = getWorld(cx, cy); state.lastMouse = { x: cx, y: cy };
-        if(state.tool === 'draw' || state.tool === 'erase') {
-            const aId = state.userId + '_' + Date.now(); const props = getPenProperties();
-            const color = state.tool === 'erase' ? state.boardColor : props.finalColor;
-            const size = (state.tool === 'erase' ? 30 : props.size) / state.scale;
-            const pData = { userId: state.userId, points: [w], color, size };
-            state.roomRef.child('active').child(aId).set(pData); state.activePaths[aId] = pData;
+        const x = e.clientX || (e.touches?.[0]?.clientX);
+        const y = e.clientY || (e.touches?.[0]?.clientY);
+        if (!x) return;
+        if (State.tool === 'text') { State.textPosition = screenToWorld(x, y); UI.openTextInput(); return; }
+        State.isDrawing = true;
+        const world = screenToWorld(x, y);
+        State.lastPoint = { x, y };
+        if (State.tool === 'draw' || State.tool === 'erase') {
+            const id = State.userId + '_' + Date.now();
+            const color = State.tool === 'erase' ? '#0a0a0f' : State.color;
+            const size = (State.tool === 'erase' ? 30 : State.penSize) / State.camera.zoom;
+            DB.setActive(id, { userId: State.userId, points: [world], color, size });
         }
     }
-
     function handleMove(e) {
-        if(e.touches?.length === 2) { /* Pinch Zoom qisqartirildi (joy tejash), lekin mantiq bir xil */
-            const d = Math.hypot(e.touches[0].clientX - e.touches[1].clientX, e.touches[0].clientY - e.touches[1].clientY);
-            if(state.pinchInitialDistance > 0) {
-                state.scale *= d / state.pinchInitialDistance; state.scale = Math.max(0.2, Math.min(state.scale, 5));
-                state.pinchInitialDistance = d; scheduleRender();
-            } else state.pinchInitialDistance = d; return;
-        }
-
-        const cx = e.clientX || e.touches?.[0]?.clientX; const cy = e.clientY || e.touches?.[0]?.clientY;
-        state.mousePos = {x:cx, y:cy};
-
-        if(state.isResizingImage && state.resizingImageId) {
-            const img = state.elements.find(el => el.id === state.resizingImageId);
-            if(img) {
-                const w = getWorld(cx, cy), sW = getWorld(state.resizeStart.x, state.resizeStart.y);
-                const dx = w.x - sW.x, dy = w.y - sW.y;
-                let nx = state.resizeStartRect.x, ny = state.resizeStartRect.y, nw = state.resizeStartRect.width, nh = state.resizeStartRect.height;
-                if(state.resizeHandle === 'tl') { nx+=dx; ny+=dy; nw-=dx; nh-=dy; } else if(state.resizeHandle === 'br') { nw+=dx; nh+=dy; }
-                img.x=nx; img.y=ny; img.width=Math.max(10,nw); img.height=Math.max(10,nh);
-                updateResizeLines(img.x, img.y, img.width, img.height); updateResizeHandles(); scheduleRender();
-            } return;
-        }
-
-        if(state.isDraggingImage && state.draggedImageId) {
-            const img = state.elements.find(el => el.id === state.draggedImageId);
-            if(img) { const w = getWorld(cx, cy); img.x = w.x - state.dragOffset.x; img.y = w.y - state.dragOffset.y; if(img.key) state.roomRef.child('elements').child(img.key).update({x:img.x, y:img.y}); updateResizeHandles(); scheduleRender(); } return;
-        }
-
-        if(state.isDrawing && state.tool === 'pan') { state.offset.x += (cx - state.lastMouse.x); state.offset.y += (cy - state.lastMouse.y); state.lastMouse = {x:cx, y:cy}; scheduleRender(); return; }
-
-        if(state.isDrawing && (state.tool === 'draw' || state.tool === 'erase')) {
-            const ak = Object.keys(state.activePaths).filter(k => state.activePaths[k]?.userId === state.userId);
-            if(ak.length > 0) {
-                const p = state.activePaths[ak[ak.length-1]];
-                const w = getWorld(cx, cy);
-                if(Math.hypot(w.x - p.points[p.points.length-1].x, w.y - p.points[p.points.length-1].y) > touchSettings.minDistance) {
-                    p.points.push(w); state.roomRef.child('active').child(ak[ak.length-1]).update({ points: p.points }); scheduleRender();
+        const x = e.clientX || (e.touches?.[0]?.clientX);
+        const y = e.clientY || (e.touches?.[0]?.clientY);
+        if (!x) return;
+        const world = screenToWorld(x, y);
+        DB.updateCursor(world);
+        if (!State.isDrawing) return;
+        if (State.tool === 'pan') { State.camera.x += x - State.lastPoint.x; State.camera.y += y - State.lastPoint.y; State.lastPoint = { x, y }; }
+        else if (State.canDraw && (State.tool === 'draw' || State.tool === 'erase')) {
+            const keys = Object.keys(State.activePaths).filter(k => State.activePaths[k]?.userId === State.userId);
+            if (keys.length) {
+                const p = State.activePaths[keys[0]];
+                if (p && p.points) {
+                    const last = p.points[p.points.length - 1];
+                    if (Math.hypot(world.x - last.x, world.y - last.y) > 2) { p.points.push(world); DB.updateActive(keys[0], p.points); }
                 }
             }
         }
+        State.lastPoint = { x, y };
     }
-
     function handleEnd() {
-        if(state.isResizingImage) { state.isResizingImage=false; hideResizeHandles(); if(state.selectedImageId) updateResizeHandles(); }
-        if(state.isDraggingImage) { state.isDraggingImage=false; }
-        
-        if(state.isDrawing && (state.tool === 'draw' || state.tool === 'erase')) {
-            const ak = Object.keys(state.activePaths).filter(k => state.activePaths[k]?.userId === state.userId);
-            if(ak.length > 0) {
-                const p = state.activePaths[ak[ak.length-1]];
-                if(p?.points?.length > 1) { const nr = state.roomRef.child('elements').push({type:'path', points:p.points, color:p.color, size:p.size}); addToHistory(); }
-                state.roomRef.child('active').child(ak[ak.length-1]).remove(); delete state.activePaths[ak[ak.length-1]];
+        if (!State.isDrawing) return;
+        State.isDrawing = false;
+        if (State.canDraw && (State.tool === 'draw' || State.tool === 'erase')) {
+            const keys = Object.keys(State.activePaths).filter(k => State.activePaths[k]?.userId === State.userId);
+            if (keys.length) {
+                const p = State.activePaths[keys[0]];
+                if (p?.points?.length > 1) DB.saveElement({ type: 'path', points: p.points, color: p.color, size: p.size });
+                DB.removeActive(keys[0]);
             }
         }
-        state.isDrawing = false; scheduleRender(); state.pinchInitialDistance = 0;
     }
+    canvas.addEventListener('pointerdown', handleStart);
+    window.addEventListener('pointermove', handleMove);
+    window.addEventListener('pointerup', handleEnd);
+    canvas.addEventListener('wheel', (e) => {
+        e.preventDefault();
+        const world = screenToWorld(e.clientX, e.clientY);
+        State.camera.zoom *= e.deltaY > 0 ? 0.9 : 1.1;
+        State.camera.zoom = Math.min(5, Math.max(0.3, State.camera.zoom));
+        State.camera.x = e.clientX - world.x * State.camera.zoom;
+        State.camera.y = e.clientY - world.y * State.camera.zoom;
+        if (State.isTeacher) DB.syncCamera();
+    }, { passive: false });
 
-    window.addEventListener('wheel', (e) => { e.preventDefault(); const w = getWorld(e.clientX, e.clientY); state.scale *= e.deltaY > 0 ? 0.9 : 1.1; state.scale = Math.max(0.2, Math.min(state.scale, 5)); state.offset.x = e.clientX - w.x * state.scale; state.offset.y = e.clientY - w.y * state.scale; if(state.selectedImageId) updateResizeHandles(); scheduleRender(); }, { passive: false });
-
-    // ==================== FIREBASE SYNC (Aynan shu) ====================
-    function initRealtime() {
-        const rRef = state.roomRef;
-        rRef.child('password').on('value', s => { state.roomPassword = s.val()||''; state.hasPassword = !!state.roomPassword; });
-        rRef.child('active').on('child_added', s => { if(s.val().userId !== state.userId) { state.activePaths[s.key] = s.val(); scheduleRender(); } });
-        rRef.child('active').on('child_changed', s => { if(s.val().userId !== state.userId) { state.activePaths[s.key] = s.val(); scheduleRender(); } });
-        rRef.child('active').on('child_removed', s => { delete state.activePaths[s.key]; scheduleRender(); });
-        rRef.child('elements').on('child_added', s => { const e = s.val(); e.key = s.key; state.elements.push(e); if(e.type==='image'&&!imageCache.has(e.id)){ const i=new Image(); i.src=e.data; imageCache.set(e.id, i); } scheduleRender(); });
-        rRef.child('elements').on('child_removed', s => { state.elements = state.elements.filter(el => el.key !== s.key); scheduleRender(); });
-        
-        const pRef = rRef.child('presence').child(state.userId); pRef.onDisconnect().remove();
-        const uc = () => pRef.set({ online:true, x:getWorld(state.mousePos.x, state.mousePos.y).x, y:getWorld(state.mousePos.x, state.mousePos.y).y });
-        window.addEventListener('mousemove', uc); canvas.addEventListener('touchmove', uc);
-        rRef.child('presence').on('value', s => {
-            const u = s.val()||{}; state.userCount = Object.keys(u).length; document.getElementById('menuUserCount').innerText = state.userCount;
-            state.cursors = {}; Object.entries(u).forEach(([id, d]) => { if(id!==state.userId) state.cursors[id]=d; }); scheduleRender();
+    // ========== INIT UI ==========
+    function initUIElements() {
+        const colorGrid = document.getElementById('colorGridMenu');
+        presetColors.forEach(c => {
+            const ball = document.createElement('div');
+            ball.className = 'color-ball';
+            ball.style.backgroundColor = c;
+            ball.onclick = () => {
+                State.color = c;
+                document.querySelectorAll('#colorGridMenu .color-ball').forEach(s => s.classList.remove('active'));
+                ball.classList.add('active');
+                document.getElementById('colorPickerMenu').value = c;
+                document.getElementById('colorIndicator').style.backgroundColor = c;
+            };
+            if (c === State.color) ball.classList.add('active');
+            colorGrid.appendChild(ball);
         });
+        document.getElementById('penSizeSlider').addEventListener('input', (e) => { State.penSize = parseInt(e.target.value); document.getElementById('sizeValue').innerText = State.penSize; });
+        document.getElementById('colorPickerMenu').addEventListener('input', (e) => { State.color = e.target.value; document.getElementById('colorIndicator').style.backgroundColor = e.target.value; });
+        document.getElementById('colorIndicator').style.backgroundColor = State.color;
     }
 
-    // ==================== UI ACTIONS ====================
-    function setTool(t) { state.tool = t; document.querySelectorAll('.left-toolbar .tool-btn').forEach(b => b.classList.remove('active')); document.getElementById('btn-'+t).classList.add('active'); if(t==='text') startTextPlacement(); else hideTextToolbar(); }
-    function centerView() { state.scale = 1; state.offset = {x:0, y:0}; scheduleRender(); }
-    function showCreateRoomModal() { document.getElementById('createRoomModal').classList.add('show'); }
-    function showJoinRoomModal() { document.getElementById('joinRoomName').innerText = document.getElementById('roomInput').value; document.getElementById('joinRoomModal').classList.add('show'); }
-    function closeModal(id) { document.getElementById(id).classList.remove('show'); }
-    function showClearPasswordModal() { if(!state.hasPassword) { if(confirm("Tozalansinmi?")) clearBoard(); } else document.getElementById('passwordModal').classList.add('show'); }
-    
-    function createRoomWithPassword() {
-        const id = 'MR' + Math.random().toString(36).substr(2, 6).toUpperCase();
-        window.location.hash = id; initRoom(id, document.getElementById('roomPassword').value); closeModal('createRoomModal');
-    }
-    function joinRoomWithPassword() { window.location.hash = document.getElementById('roomInput').value; closeModal('joinRoomModal'); }
-    function verifyPasswordAndClear() { if(document.getElementById('actionPassword').value === state.roomPassword) { closeModal('passwordModal'); clearBoard(); } else alert("Parol xato"); }
-    function clearBoard() { state.roomRef.child('elements').remove(); imageCache.clear(); addToHistory(); }
-    function exportAsPNG() { const a=document.createElement('a'); a.download='mr_board.png'; a.href=canvas.toDataURL(); a.click(); }
-    function exitToHome() { window.location.hash = ''; location.reload(); }
-    function copyRoomId() { navigator.clipboard.writeText(state.roomId); }
+    // ========== EVENT LISTENERS ==========
+    document.getElementById('createRoomBtn').onclick = () => {
+        const name = document.getElementById('userName').value.trim();
+        if (!name) return alert("Ismingizni kiriting");
+        State.userName = name;
+        State.isTeacher = true;
+        DB.init('MR' + Math.floor(1000 + Math.random() * 9000));
+    };
+    document.getElementById('joinRoomBtn').onclick = () => {
+        const name = document.getElementById('userName').value.trim();
+        const id = document.getElementById('roomInput').value.trim().toUpperCase();
+        if (!name) return alert("Ismingizni kiriting");
+        if (!id) return alert("Xona kodini kiriting");
+        State.userName = name;
+        State.isTeacher = false;
+        DB.init(id);
+    };
+    document.getElementById('toolsBtn').onclick = () => UI.openMenu('tools');
+    document.getElementById('colorsBtn').onclick = () => UI.openMenu('colors');
+    document.getElementById('studentsBtn').onclick = () => UI.openMenu('students');
+    document.getElementById('chatBtn').onclick = () => UI.openChat();
+    document.getElementById('closeChatBtn').onclick = () => UI.closeChat();
+    document.getElementById('sendChatBtn').onclick = () => Chat.sendMessage();
+    document.getElementById('chatInput').addEventListener('keypress', (e) => { if (e.key === 'Enter') Chat.sendMessage(); });
+    document.getElementById('menuOverlay').onclick = () => UI.closeAll();
+    document.getElementById('micBtn').onclick = () => UI.toggleMic();
+    document.getElementById('undoBtn').onclick = () => CanvasActions.undo();
+    document.getElementById('undoMenuBtn').onclick = () => { CanvasActions.undo(); UI.closeAll(); };
+    document.getElementById('uploadImageMenuBtn').onclick = () => { CanvasActions.uploadImage(); UI.closeAll(); };
+    document.getElementById('centerViewMenuBtn').onclick = () => { CanvasActions.centerView(); UI.closeAll(); };
+    document.getElementById('clearBoardMenuBtn').onclick = () => { DB.clearBoard(); UI.closeAll(); };
+    document.getElementById('exportBtn').onclick = () => CanvasActions.exportPNG();
+    document.getElementById('exitBtn').onclick = () => location.reload();
+    document.getElementById('cancelTextBtn').onclick = () => UI.closeTextInput();
+    document.getElementById('addTextBtn').onclick = () => CanvasActions.addText();
+    document.querySelectorAll('[data-tool]').forEach(btn => { btn.onclick = () => CanvasActions.setTool(btn.dataset.tool); });
+    document.querySelectorAll('#toolsMenu .tool-card[data-tool]').forEach(card => { card.onclick = () => { CanvasActions.setTool(card.dataset.tool); UI.closeAll(); }; });
 
-    function initRoom(id, pass='') {
-        state.roomId = id; state.roomRef = db.ref('rooms_v20/' + id); state.elements=[]; state.activePaths={}; state.history=[]; state.historyIndex=-1;
-        if(pass) state.roomRef.child('password').set(pass);
-        document.getElementById('welcome-page').style.display='none'; document.getElementById('app-page').style.display='block';
-        document.getElementById('roomDisplay').innerText = id;
-        initRealtime(); resize(); centerView();
-    }
-
-    window.addEventListener('hashchange', () => { if(window.location.hash) initRoom(window.location.hash.substring(1)); });
-    if(window.location.hash) initRoom(window.location.hash.substring(1));
-
-    document.addEventListener('keydown', e => { if(e.ctrlKey && e.key === 'z') undo(); if(e.ctrlKey && e.key === 'y') redo(); });
+    initUIElements();
+    window.Canvas = CanvasActions;
+    window.DB = DB;
+    window.UI = UI;
+})();
 </script>
 </body>
 </html>
