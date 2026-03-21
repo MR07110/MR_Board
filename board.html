@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="theme-color" content="#0f172a">
+    <meta name="theme-color" content="#0f172a" id="theme-color">
     <title>MR BOARD · ENTERPRISE · ULTIMATE</title>
     
     <script src="https://unpkg.com/lucide@latest"></script>
@@ -49,6 +49,7 @@
             --z-bg: 0; --z-canvas: 10; --z-ui: 100; --z-minimap: 150; --z-overlay: 200; --z-modal: 300; --z-toast: 1000;
         }
 
+        /* Dark theme (system default) */
         @media (prefers-color-scheme: dark) {
             :root {
                 --bg-base: #020617; 
@@ -66,6 +67,34 @@
             }
         }
 
+        /* Manual theme overrides */
+        body[data-theme="light"] {
+            --bg-base: #f8fafc;
+            --bg-canvas: #e2e8f0;
+            --bg-glass: rgba(255, 255, 255, 0.65);
+            --bg-panel: rgba(255, 255, 255, 0.85);
+            --bg-hover: rgba(0, 0, 0, 0.05);
+            --text-main: #0f172a;
+            --text-muted: #64748b;
+            --border-subtle: rgba(255, 255, 255, 0.4);
+            --border-strong: rgba(0, 0, 0, 0.1);
+            --brand-primary: #007aff;
+            --shadow-float: 0 24px 48px -12px rgba(0,0,0,0.15);
+        }
+        body[data-theme="dark"] {
+            --bg-base: #020617;
+            --bg-canvas: #0f172a;
+            --bg-glass: rgba(15, 23, 42, 0.55);
+            --bg-panel: rgba(30, 41, 59, 0.85);
+            --bg-hover: rgba(255, 255, 255, 0.1);
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --border-subtle: rgba(255, 255, 255, 0.1);
+            --border-strong: rgba(255, 255, 255, 0.2);
+            --brand-primary: #0a84ff;
+            --shadow-float: 0 24px 48px -12px rgba(0,0,0,0.5);
+        }
+
         * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
         
         body {
@@ -78,6 +107,7 @@
             user-select: none;
             -webkit-user-select: none;
             touch-action: none;
+            transition: background var(--duration-base) var(--ease-smooth), color var(--duration-base) var(--ease-smooth);
         }
 
         button, input, textarea { font-family: inherit; border: none; outline: none; background: none; color: inherit; }
@@ -606,7 +636,7 @@
         <div class="auth-panel">
             <div class="brand-header">
                 <h1 class="brand-title">MR <span>BOARD</span></h1>
-                <p class="brand-subtitle">MR Edition</p>
+                <p class="brand-subtitle">Enterprise Edition</p>
             </div>
             <div class="form-group">
                 <label class="form-label">Ismingiz</label>
@@ -618,7 +648,7 @@
             <div class="auth-divider"><span>YOKI MAVJUD XONAGA KIRISH</span></div>
             <div class="form-group">
                 <label class="form-label">Xona Kodi</label>
-                <input type="text" id="auth-room-inp" class="form-input" placeholder="MR****" style="text-transform: uppercase;" maxlength="10" autocomplete="off">
+                <input type="text" id="auth-room-inp" class="form-input" placeholder="MR-XXX" style="text-transform: uppercase;" maxlength="10" autocomplete="off">
             </div>
             <button class="btn btn-ghost" id="btn-join-room">
                 <i data-lucide="log-in"></i> Xonaga Ulanish
@@ -717,8 +747,11 @@
                 <div class="slider-val"><span id="val-tool-size">4</span>px</div>
             </div>
             
-            <div class="section-label">Oyna ko'rinishlari</div>
+            <div class="section-label">Ko'rinish</div>
             <div class="grid-layout">
+                <button class="card-btn" id="act-theme-light"><i data-lucide="sun" size="24"></i>Yorug' rejim</button>
+                <button class="card-btn" id="act-theme-dark"><i data-lucide="moon" size="24"></i>Qorong'u rejim</button>
+                <button class="card-btn" id="act-theme-auto"><i data-lucide="laptop" size="24"></i>Tizimga mos</button>
                 <button class="card-btn" id="act-toggle-minimap"><i data-lucide="map" size="24"></i>Minimapni Yoqish/O'chirish</button>
                 <button class="card-btn" id="act-center"><i data-lucide="target" size="24"></i>Markazlashtirish</button>
             </div>
@@ -899,6 +932,17 @@
                 clearBoard() { if (Store.isHost) { this.ref.child('meta/hostKey').once('value', snap => { if (snap.val() === Store.hostKey) { this.ref.child('data').remove(); AppEvents.emit('ui:toast', { m: "Doska tozalandi", t: "success" }); } }); } }
                 setPermission(userId, type, value) { if (Store.isHost) { this.ref.child('meta/hostKey').once('value', snap => { if (snap.val() === Store.hostKey) { this.ref.child(`users/${userId}`).update({ [type]: value }); } }); } }
                 sendChat(text) { this.ref.child('chat').push({ u: Store.uid, n: Store.name, h: Store.isHost, m: text, tm: Utils.getTime() }); }
+                
+                kickUser(userId) {
+                    if (Store.isHost) {
+                        this.ref.child('meta/hostKey').once('value', snap => {
+                            if (snap.val() === Store.hostKey) {
+                                this.ref.child(`users/${userId}`).remove();
+                                AppEvents.emit('ui:toast', { m: "Foydalanuvchi chiqarib yuborildi", t: "success" });
+                            }
+                        });
+                    }
+                }
             }
 
             const DB = new FirebaseService();
@@ -1245,7 +1289,38 @@
             const AudioSystem = new AudioMesh();
 
             class UIController {
-                constructor() { this.initEvents(); this.initColorWheel(); this.bindAppEvents(); this.bindMinimapInteractions(); this.bindFullscreen(); }
+                constructor() { this.initEvents(); this.initColorWheel(); this.bindAppEvents(); this.bindMinimapInteractions(); this.bindFullscreen(); this.initTheme(); }
+                
+                initTheme() {
+                    const stored = localStorage.getItem('mrboard_theme');
+                    if (stored) {
+                        document.body.setAttribute('data-theme', stored);
+                    } else {
+                        // default: follow system
+                        const darkMode = window.matchMedia('(prefers-color-scheme: dark)').matches;
+                        document.body.setAttribute('data-theme', darkMode ? 'dark' : 'light');
+                    }
+                    const metaTheme = document.getElementById('theme-color');
+                    const setMeta = () => {
+                        const isDark = document.body.getAttribute('data-theme') === 'dark';
+                        metaTheme.setAttribute('content', isDark ? '#0f172a' : '#0f172a');
+                    };
+                    setMeta();
+                    const observer = new MutationObserver(setMeta);
+                    observer.observe(document.body, { attributes: true, attributeFilter: ['data-theme'] });
+                }
+                
+                setTheme(mode) {
+                    if (mode === 'auto') {
+                        localStorage.removeItem('mrboard_theme');
+                        const dark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+                        document.body.setAttribute('data-theme', dark ? 'dark' : 'light');
+                    } else {
+                        localStorage.setItem('mrboard_theme', mode);
+                        document.body.setAttribute('data-theme', mode);
+                    }
+                }
+                
                 initEvents() {
                     document.getElementById('btn-create-room').onclick = () => this.handleAuth(true);
                     document.getElementById('btn-join-room').onclick = () => this.handleAuth(false);
@@ -1271,6 +1346,11 @@
                     document.getElementById('act-undo').onclick = () => { DB.undo(); this.closeAll(); };
                     document.getElementById('act-center').onclick = () => { Store.cam = { x: 0, y: 0, z: 1 }; AppEvents.emit('render'); AppEvents.emit('ui:zoom'); DB.syncCamera(); this.closeAll(); };
                     document.getElementById('act-clear-board').onclick = () => { if (confirm("Hamma narsa o'chiriladi. Ishonchingiz komilmi?")) DB.clearBoard(); this.closeAll(); };
+                    
+                    // Theme buttons
+                    document.getElementById('act-theme-light').onclick = () => { this.setTheme('light'); this.closeAll(); };
+                    document.getElementById('act-theme-dark').onclick = () => { this.setTheme('dark'); this.closeAll(); };
+                    document.getElementById('act-theme-auto').onclick = () => { this.setTheme('auto'); this.closeAll(); };
                     
                     const fileImg = document.getElementById('sys-file-img'), fileJson = document.getElementById('sys-file-json');
                     document.getElementById('act-image').onclick = () => { fileImg.click(); this.closeAll(); };
@@ -1313,6 +1393,7 @@
                         }
                     });
                 }
+                
                 bindMinimapInteractions() {
                     const minimap = document.getElementById('minimap-widget'), header = document.getElementById('minimap-header'), resizer = document.getElementById('minimap-resize-handle');
                     const btnClose = document.getElementById('btn-close-minimap'), btnToggle = document.getElementById('act-toggle-minimap');
@@ -1346,6 +1427,7 @@
                     };
                     btnClose.addEventListener('click', () => toggleMinimap()); btnToggle.addEventListener('click', () => { toggleMinimap(); this.closeAll(); });
                 }
+                
                 bindFullscreen() {
                     const btnFsDock = document.getElementById('btn-action-fullscreen'), btnFsExit = document.getElementById('btn-exit-zen');
                     this.toggleFullscreen = () => {
@@ -1360,13 +1442,19 @@
                         lucide.createIcons(); setTimeout(() => Engine.resize(), 100); 
                     });
                 }
+                
                 handleAuth(isHost) {
                     const name = Utils.sanitize(document.getElementById('auth-name-inp').value.trim()).substring(0, 25);
                     if (!name) return AppEvents.emit('ui:toast', { m: "Ism kiriting", t: "error" });
                     let room = isHost ? `MR${Math.floor(1000 + Math.random() * 9000)}` : document.getElementById('auth-room-inp').value.trim().toUpperCase();
                     if (!room) return AppEvents.emit('ui:toast', { m: "Xona kodini kiriting", t: "error" });
                     
-                    Store.name = name; Store.isHost = isHost; Store.roomId = room; if (isHost) Store.hostKey = Utils.generateId('K'); Utils.vibrate([15, 50, 15]);
+                    Store.name = name; Store.isHost = isHost; Store.roomId = room; if (isHost) Store.hostKey = Utils.generateId('K');
+                    // Update URL hash: teacher link = #t-<room>, student link = #<room>
+                    const newHash = isHost ? `#t-${room}` : `#${room}`;
+                    history.pushState(null, '', newHash);
+                    
+                    Utils.vibrate([15, 50, 15]);
                     const auth = document.getElementById('auth-gateway'); auth.style.opacity = '0';
                     setTimeout(() => {
                         auth.style.display = 'none'; document.getElementById('ui-overlay').style.display = 'block'; document.getElementById('ui-room-code').innerText = room;
@@ -1374,6 +1462,33 @@
                         AppEvents.emit('ui:role'); DB.init(room); Engine.init(); AudioSystem.init(); AppEvents.emit('ui:toast', { m: "Tizimga ulandingiz!", t: "success" });
                     }, 500);
                 }
+                
+                handleHash() {
+                    const hash = window.location.hash.slice(1);
+                    if (!hash) return;
+                    let isTeacher = false;
+                    let roomId = hash;
+                    if (hash.startsWith('t-')) {
+                        isTeacher = true;
+                        roomId = hash.slice(2);
+                    }
+                    if (roomId) {
+                        // show auth panel and prefill? we'll just simulate join
+                        const name = prompt("Ismingizni kiriting:") || "Mehmon";
+                        if (!name) return;
+                        Store.userName = name;
+                        Store.isTeacher = isTeacher;
+                        Store.roomId = roomId;
+                        if (isTeacher) Store.hostKey = Utils.generateId('K');
+                        const auth = document.getElementById('auth-gateway'); auth.style.opacity = '0';
+                        setTimeout(() => {
+                            auth.style.display = 'none'; document.getElementById('ui-overlay').style.display = 'block'; document.getElementById('ui-room-code').innerText = roomId;
+                            if (isTeacher) { document.getElementById('btn-open-users').style.display = 'flex'; document.getElementById('panel-host-controls').style.display = 'block'; document.getElementById('ui-participants-list').classList.add('host-active'); }
+                            AppEvents.emit('ui:role'); DB.init(roomId); Engine.init(); AudioSystem.init(); AppEvents.emit('ui:toast', { m: "Tizimga ulandingiz!", t: "success" });
+                        }, 500);
+                    }
+                }
+                
                 setTool(tool) {
                     Utils.vibrate(10); Store.tool = tool;
                     document.querySelectorAll('[data-tool]').forEach(b => b.classList.remove('is-active')); document.querySelector(`[data-tool="${tool}"]`).classList.add('is-active');
@@ -1475,17 +1590,22 @@
                         const list = document.getElementById('ui-participants-list'); let html = '', count = 0;
                         Object.values(Store.db.peers).forEach(p => {
                             if (p.h) return; count++;
-                            html += `<div class="user-card"><div class="user-meta"><div class="avatar">${p.n.charAt(0).toUpperCase()}</div><span>${Utils.sanitize(p.n)}</span></div><div class="perm-actions"><button class="perm-btn ${p.d ? 'is-granted' : ''}" data-u="${p.id}" data-p="d" title="Chizishga ruxsat"><i data-lucide="pencil" size="18"></i></button><button class="perm-btn ${p.s ? 'is-granted' : ''}" data-u="${p.id}" data-p="s" title="Gapirishga ruxsat"><i data-lucide="mic" size="18"></i></button></div></div>`;
+                            html += `<div class="user-card"><div class="user-meta"><div class="avatar">${p.n.charAt(0).toUpperCase()}</div><span>${Utils.sanitize(p.n)}</span></div><div class="perm-actions"><button class="perm-btn ${p.d ? 'is-granted' : ''}" data-u="${p.id}" data-p="d" title="Chizishga ruxsat"><i data-lucide="pencil" size="18"></i></button><button class="perm-btn ${p.s ? 'is-granted' : ''}" data-u="${p.id}" data-p="s" title="Gapirishga ruxsat"><i data-lucide="mic" size="18"></i></button><button class="perm-btn" data-u="${p.id}" data-action="kick" title="Chiqarib yuborish"><i data-lucide="user-x" size="18"></i></button></div></div>`;
                         });
                         if (count === 0) html = `<div style="text-align:center; color:var(--text-muted); font-weight:800; margin-top:20px;">Qatnashchilar yo'q</div>`;
                         list.innerHTML = html; lucide.createIcons();
                         document.getElementById('badge-users-count').innerText = count; document.getElementById('badge-users-count').style.display = count > 0 ? 'flex' : 'none';
-                        if (Store.isHost) { list.querySelectorAll('.perm-btn').forEach(btn => { btn.onclick = () => { DB.setPermission(btn.dataset.u, btn.dataset.p, !Store.db.peers[btn.dataset.u][btn.dataset.p]); Utils.vibrate(10); }; }); }
+                        if (Store.isHost) {
+                            list.querySelectorAll('.perm-btn[data-p]').forEach(btn => { btn.onclick = () => { DB.setPermission(btn.dataset.u, btn.dataset.p, !Store.db.peers[btn.dataset.u][btn.dataset.p]); Utils.vibrate(10); }; });
+                            list.querySelectorAll('.perm-btn[data-action="kick"]').forEach(btn => { btn.onclick = () => { if(confirm("Foydalanuvchini chiqarib yuborishni xohlaysizmi?")) DB.kickUser(btn.dataset.u); }; });
+                        }
                     });
                 }
             }
 
             const UI = new UIController();
+            window.addEventListener('load', () => UI.handleHash());
+            window.addEventListener('hashchange', () => location.reload()); // simple reload on hash change, could be smarter
         })();
     </script>
 </body>
