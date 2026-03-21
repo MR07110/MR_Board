@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <title>MR Board · Professional Studio</title>
+    <title>MR Board · Ultimate Group Edition</title>
     
     <script src="https://unpkg.com/lucide@latest"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
@@ -13,47 +13,54 @@
 
     <style>
         /* ==========================================================================
-           1. ASOSIY SOZLAMALAR VA O'ZGARUVCHILAR (CSS VARIABLES)
+           1. ASOSIY SOZLAMALAR VA DIZAYN TIZIMI
            ========================================================================== */
         :root {
-            /* Ranglar */
-            --bg-dark: #09090b;
-            --bg-surface: #18181b;
-            --bg-surface-light: #27272a;
-            --bg-overlay: rgba(9, 9, 11, 0.8);
+            /* Chuqur qora va kulrang palitra (Performans va ko'z uchun qulay) */
+            --bg-base: #000000;
+            --bg-surface: #121212;
+            --bg-surface-elevated: #1e1e1e;
+            --bg-overlay: rgba(0, 0, 0, 0.75);
             
-            --border-color: #3f3f46;
-            --border-light: #52525b;
+            --border-subtle: #2a2a2a;
+            --border-active: #404040;
             
-            --text-primary: #f4f4f5;
-            --text-secondary: #a1a1aa;
+            --text-main: #f3f4f6;
+            --text-muted: #9ca3af;
             
-            --accent-blue: #3b82f6;
-            --accent-blue-hover: #2563eb;
-            --accent-blue-alpha: rgba(59, 130, 246, 0.15);
+            /* Accent ranglar */
+            --accent-primary: #3b82f6;
+            --accent-hover: #2563eb;
+            --accent-alpha: rgba(59, 130, 246, 0.15);
             
-            --success: #10b981;
-            --danger: #ef4444;
-            --danger-alpha: rgba(239, 68, 68, 0.15);
-            --warning: #f59e0b;
+            --status-success: #10b981;
+            --status-danger: #ef4444;
+            --status-danger-alpha: rgba(239, 68, 68, 0.15);
+            --status-warning: #f59e0b;
 
-            /* O'lchamlar va Soya */
+            /* Geometriya */
             --radius-sm: 8px;
             --radius-md: 12px;
-            --radius-lg: 16px;
-            --radius-pill: 9999px;
+            --radius-lg: 20px;
+            --radius-full: 9999px;
             
-            --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
-            --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.5), 0 4px 6px -2px rgba(0, 0, 0, 0.25);
+            /* Soyalar */
+            --shadow-float: 0 10px 25px -5px rgba(0, 0, 0, 0.5), 0 8px 10px -6px rgba(0, 0, 0, 0.3);
+            --shadow-subtle: 0 4px 6px -1px rgba(0, 0, 0, 0.3);
             
             /* Animatsiyalar */
-            --transition-fast: 0.15s ease;
-            --transition-normal: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+            --ease-in-out: cubic-bezier(0.4, 0, 0.2, 1);
+            --duration-fast: 150ms;
+            --duration-normal: 300ms;
+
+            /* Z-Index iyerarxiyasi */
             --z-canvas: 1;
+            --z-grid: 2;
             --z-ui: 10;
+            --z-sidebar: 50;
             --z-modal: 100;
-            --z-toast: 1000;
+            --z-toast: 999;
         }
 
         * {
@@ -63,136 +70,124 @@
             -webkit-tap-highlight-color: transparent;
         }
 
-        body, html {
+        html, body {
             width: 100%;
             height: 100%;
             overflow: hidden;
-            background-color: var(--bg-dark);
-            color: var(--text-primary);
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-            /* Mobil qurilmalarda matn belgilanishini va imo-ishoralarni to'xtatish */
+            background-color: var(--bg-base);
+            color: var(--text-main);
+            font-family: -apple-system, BlinkMacSystemFont, 'Inter', Roboto, Helvetica, Arial, sans-serif;
             user-select: none;
             -webkit-user-select: none;
             touch-action: none;
         }
 
-        /* Umumiy tugma stillari */
-        button {
+        button, input, textarea {
             border: none;
             background: none;
             color: inherit;
             font-family: inherit;
-            cursor: pointer;
             outline: none;
         }
 
-        input, textarea {
-            font-family: inherit;
-            outline: none;
-        }
+        button { cursor: pointer; }
 
         /* ==========================================================================
-           2. KANVAS (DOSKA) QISMI
+           2. CANVAS VA GRID (ASOSIY ISH MAYDONI)
            ========================================================================== */
-        #canvas-container {
+        #canvas-wrapper {
             position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
+            inset: 0;
             z-index: var(--z-canvas);
-            background-color: var(--bg-dark);
+            background-color: var(--bg-base);
         }
 
-        canvas {
+        #main-canvas {
             display: block;
             width: 100%;
             height: 100%;
-            touch-action: none; /* Muhim: brauzerning standart zoom va scrollini o'chiradi */
+            touch-action: none;
         }
 
         /* ==========================================================================
-           3. KIRISH (WELCOME) SAHIFASI
+           3. AUTHENTICATION (KIRISH EKRANI)
            ========================================================================== */
-        #welcome-screen {
+        #auth-screen {
             position: fixed;
             inset: 0;
-            background-color: var(--bg-dark);
-            background-image: radial-gradient(circle at 50% 0%, #1e1e28 0%, transparent 70%);
+            background-color: var(--bg-base);
+            background-image: radial-gradient(circle at top, #1e1e24 0%, var(--bg-base) 80%);
             z-index: var(--z-modal);
             display: flex;
             align-items: center;
             justify-content: center;
-            padding: 20px;
-            transition: opacity var(--transition-normal);
+            padding: 24px;
+            transition: opacity var(--duration-normal) var(--ease-out-expo);
         }
 
-        .auth-card {
+        .auth-container {
             background-color: var(--bg-surface);
-            border: 1px solid var(--border-color);
+            border: 1px solid var(--border-subtle);
             border-radius: var(--radius-lg);
-            padding: 40px;
+            padding: 48px 40px;
             width: 100%;
-            max-width: 420px;
-            box-shadow: var(--shadow-lg);
-            animation: slideUpFade 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+            max-width: 440px;
+            box-shadow: var(--shadow-float);
+            animation: slideUp 0.6s var(--ease-out-expo);
         }
 
-        @keyframes slideUpFade {
-            from { opacity: 0; transform: translateY(30px); }
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(40px); }
             to { opacity: 1; transform: translateY(0); }
         }
 
-        .auth-header {
-            text-align: center;
-            margin-bottom: 30px;
-        }
-
-        .auth-title {
-            font-size: 32px;
+        .brand-title {
+            font-size: 36px;
             font-weight: 800;
-            background: linear-gradient(135deg, #60a5fa, #3b82f6, #8b5cf6);
+            text-align: center;
+            background: linear-gradient(135deg, #60a5fa, #3b82f6);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             margin-bottom: 8px;
+            letter-spacing: -1px;
         }
 
-        .auth-subtitle {
-            color: var(--text-secondary);
-            font-size: 14px;
+        .brand-subtitle {
+            text-align: center;
+            color: var(--text-muted);
+            font-size: 15px;
+            margin-bottom: 40px;
         }
 
-        .form-group {
-            margin-bottom: 20px;
-        }
-
-        .form-label {
+        .input-group { margin-bottom: 24px; }
+        
+        .input-label {
             display: block;
-            font-size: 13px;
+            font-size: 12px;
             font-weight: 600;
-            color: var(--text-secondary);
+            color: var(--text-muted);
             margin-bottom: 8px;
             text-transform: uppercase;
-            letter-spacing: 0.5px;
+            letter-spacing: 1px;
         }
 
-        .form-input {
+        .auth-input {
             width: 100%;
-            padding: 14px 16px;
-            background-color: var(--bg-surface-light);
-            border: 1px solid var(--border-color);
+            padding: 16px;
+            background-color: var(--bg-base);
+            border: 1px solid var(--border-subtle);
             border-radius: var(--radius-md);
-            color: var(--text-primary);
             font-size: 16px;
-            transition: all var(--transition-fast);
+            color: var(--text-main);
+            transition: border-color var(--duration-fast);
         }
 
-        .form-input:focus {
-            border-color: var(--accent-blue);
-            box-shadow: 0 0 0 3px var(--accent-blue-alpha);
+        .auth-input:focus {
+            border-color: var(--accent-primary);
+            box-shadow: 0 0 0 4px var(--accent-alpha);
         }
 
-        .btn-main {
+        .btn-primary, .btn-secondary {
             width: 100%;
             padding: 16px;
             border-radius: var(--radius-md);
@@ -201,94 +196,89 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 10px;
-            transition: all var(--transition-fast);
-            margin-bottom: 12px;
+            gap: 12px;
+            transition: all var(--duration-fast);
+            margin-bottom: 16px;
         }
 
         .btn-primary {
-            background-color: var(--accent-blue);
-            color: white;
-            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
+            background-color: var(--accent-primary);
+            color: #fff;
+            box-shadow: 0 4px 15px rgba(59, 130, 246, 0.3);
         }
 
-        .btn-primary:hover { background-color: var(--accent-blue-hover); transform: translateY(-1px); }
+        .btn-primary:hover { background-color: var(--accent-hover); transform: translateY(-2px); }
         .btn-primary:active { transform: translateY(1px); }
 
         .btn-secondary {
             background-color: transparent;
-            border: 1px solid var(--border-color);
-            color: var(--text-primary);
+            border: 1px solid var(--border-subtle);
+            color: var(--text-main);
         }
-        
-        .btn-secondary:hover { background-color: var(--bg-surface-light); }
+        .btn-secondary:hover { background-color: var(--bg-surface-elevated); }
 
-        .auth-divider {
+        .divider-text {
             display: flex;
             align-items: center;
             text-align: center;
-            margin: 24px 0;
-            color: var(--text-secondary);
-            font-size: 13px;
+            margin: 32px 0;
+            color: var(--text-muted);
+            font-size: 12px;
+            font-weight: 600;
         }
-        
-        .auth-divider::before, .auth-divider::after {
-            content: '';
-            flex: 1;
-            border-bottom: 1px solid var(--border-color);
+        .divider-text::before, .divider-text::after {
+            content: ''; flex: 1; border-bottom: 1px solid var(--border-subtle);
         }
-        
-        .auth-divider span { padding: 0 10px; }
+        .divider-text span { padding: 0 16px; }
 
         /* ==========================================================================
-           4. ASOSIY INTERFEYS (UI)
+           4. ASOSIY INTERFEYS (TOOLBarlar)
            ========================================================================== */
-        #app-ui {
-            display: none;
+        #ui-layer {
             position: absolute;
             inset: 0;
-            pointer-events: none; /* Faqat tugmalar bosiladi, orqa fon kanvasga o'tadi */
+            pointer-events: none;
             z-index: var(--z-ui);
+            display: none;
         }
 
-        /* --- Yuqori Status Bar --- */
-        .status-bar {
+        /* Top Status Bar */
+        .top-bar {
             position: absolute;
-            top: 16px;
-            left: 16px;
-            right: 16px;
+            top: 20px;
+            left: 20px;
+            right: 20px;
             display: flex;
             justify-content: space-between;
-            align-items: flex-start;
             pointer-events: none;
         }
 
-        .status-group {
+        .pill-group {
             display: flex;
-            gap: 10px;
+            gap: 12px;
             flex-wrap: wrap;
         }
 
-        .status-badge {
-            background-color: rgba(24, 24, 27, 0.8);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
+        .status-pill {
+            background-color: rgba(18, 18, 18, 0.85);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
             padding: 8px 16px;
-            border-radius: var(--radius-pill);
-            font-size: 13px;
+            border-radius: var(--radius-full);
+            font-size: 14px;
             font-weight: 500;
             display: flex;
             align-items: center;
             gap: 8px;
             pointer-events: auto;
-            box-shadow: var(--shadow-sm);
+            box-shadow: var(--shadow-subtle);
         }
 
-        /* --- Pastki Boshqaruv Paneli (Bottom Toolbar) --- */
-        .toolbar-wrapper {
+        /* Bottom Toolbar */
+        .bottom-dock {
             position: absolute;
-            bottom: 24px;
+            bottom: 32px;
             left: 0;
             right: 0;
             display: flex;
@@ -297,866 +287,787 @@
             padding: 0 16px;
         }
 
-        .main-toolbar {
-            background-color: rgba(24, 24, 27, 0.9);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 24px;
-            padding: 8px;
+        .toolbar-glass {
+            background-color: rgba(24, 24, 24, 0.85);
+            backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 28px;
+            padding: 10px;
             display: flex;
             align-items: center;
             gap: 6px;
             pointer-events: auto;
-            box-shadow: var(--shadow-lg);
+            box-shadow: var(--shadow-float);
             max-width: 100%;
             overflow-x: auto;
-            /* Scrollbarni yashirish */
             scrollbar-width: none;
-            -ms-overflow-style: none;
         }
-        .main-toolbar::-webkit-scrollbar { display: none; }
+        .toolbar-glass::-webkit-scrollbar { display: none; }
 
-        .tool-separator {
+        .toolbar-divider {
             width: 1px;
-            height: 28px;
-            background-color: var(--border-color);
-            margin: 0 4px;
+            height: 32px;
+            background-color: var(--border-subtle);
+            margin: 0 6px;
         }
 
-        .tool-btn {
-            width: 44px;
-            height: 44px;
-            border-radius: 16px;
+        .action-btn {
+            width: 48px;
+            height: 48px;
+            border-radius: 18px;
             display: flex;
             align-items: center;
             justify-content: center;
-            color: var(--text-secondary);
-            transition: all var(--transition-fast);
+            color: var(--text-muted);
+            transition: all var(--duration-fast);
             position: relative;
             flex-shrink: 0;
         }
 
-        .tool-btn:hover {
-            color: var(--text-primary);
-            background-color: var(--bg-surface-light);
-        }
-
-        .tool-btn:active { transform: scale(0.92); }
-
-        .tool-btn.active {
-            color: var(--accent-blue);
-            background-color: var(--accent-blue-alpha);
-        }
-
-        /* Ovoz vizualizatsiyasi (Toolbar ichida) */
-        .audio-monitor {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            background-color: rgba(0, 0, 0, 0.3);
-            padding: 0 12px;
-            height: 44px;
-            border-radius: 16px;
-            border: 1px inset rgba(255,255,255,0.05);
-        }
-
-        .bars-container {
-            display: flex;
-            align-items: center;
-            gap: 3px;
-            height: 20px;
-        }
-
-        .audio-bar {
-            width: 3px;
-            min-height: 4px;
-            background-color: var(--accent-blue);
-            border-radius: 3px;
-            transition: height 0.05s ease; /* Tezkor reaksiya */
-        }
-
-        .db-text {
-            font-size: 11px;
-            font-family: monospace;
-            color: var(--text-secondary);
-            width: 45px;
-            text-align: right;
-        }
-
-        /* Mikrofon holatlari */
-        .mic-active {
-            color: var(--success) !important;
-            background-color: rgba(16, 185, 129, 0.15) !important;
+        .action-btn:hover {
+            color: var(--text-main);
+            background-color: rgba(255, 255, 255, 0.05);
         }
         
-        .mic-speaking {
-            animation: pulse-mic 1.5s infinite;
+        .action-btn:active { transform: scale(0.9); }
+
+        .action-btn.active-tool {
+            color: var(--accent-primary);
+            background-color: var(--accent-alpha);
         }
 
-        @keyframes pulse-mic {
-            0% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.4); }
-            70% { box-shadow: 0 0 0 10px rgba(16, 185, 129, 0); }
+        /* Audio Visualizer */
+        .audio-wave {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            background-color: rgba(0, 0, 0, 0.5);
+            padding: 0 16px;
+            height: 48px;
+            border-radius: 18px;
+            border: 1px inset rgba(255,255,255,0.02);
+        }
+
+        .wave-bars {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            height: 24px;
+        }
+
+        .w-bar {
+            width: 4px;
+            min-height: 4px;
+            background-color: var(--accent-primary);
+            border-radius: 4px;
+            transition: height 0.07s ease;
+        }
+
+        .db-label {
+            font-size: 12px;
+            font-family: monospace;
+            color: var(--text-muted);
+            width: 50px;
+            text-align: right;
+            font-weight: 600;
+        }
+
+        .mic-on { color: var(--accent-primary) !important; background-color: var(--accent-alpha) !important; }
+        .mic-off { color: var(--status-danger) !important; background-color: var(--status-danger-alpha) !important; }
+        .mic-speaking { color: var(--status-success) !important; background-color: rgba(16, 185, 129, 0.15) !important; animation: pulseMic 1.5s infinite; }
+
+        @keyframes pulseMic {
+            0% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.3); }
+            70% { box-shadow: 0 0 0 12px rgba(16, 185, 129, 0); }
             100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
         }
 
-        .mic-muted {
-            color: var(--danger) !important;
-            background-color: var(--danger-alpha) !important;
-        }
-
-        /* Rangi ko'rsatkichi */
-        .color-preview-btn {
-            width: 34px;
-            height: 34px;
+        .color-dot {
+            width: 32px;
+            height: 32px;
             border-radius: 50%;
-            border: 2px solid rgba(255,255,255,0.8);
-            box-shadow: 0 0 0 2px transparent;
-            margin: 0 5px;
+            border: 3px solid rgba(255,255,255,0.9);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.5);
             transition: transform 0.2s;
         }
-        .color-preview-btn:hover { transform: scale(1.1); }
+        .color-dot:hover { transform: scale(1.15); }
 
-        /* Bildirishnoma (Badge) */
-        .badge-count {
+        .notification-badge {
             position: absolute;
             top: 2px;
             right: 2px;
-            background-color: var(--danger);
-            color: white;
+            background-color: var(--status-danger);
+            color: #fff;
             font-size: 10px;
-            font-weight: bold;
-            height: 18px;
-            min-width: 18px;
-            padding: 0 5px;
-            border-radius: 9px;
+            font-weight: 800;
+            min-width: 20px;
+            height: 20px;
+            border-radius: 10px;
             display: flex;
             align-items: center;
             justify-content: center;
+            padding: 0 6px;
             border: 2px solid var(--bg-surface);
         }
 
         /* ==========================================================================
-           5. YON MENYULAR (SIDEBARS) VA OVERLAY
+           5. YON MENYULAR (SIDEBARS & MODALS)
            ========================================================================== */
-        .overlay {
+        .backdrop {
             position: fixed;
             inset: 0;
-            background-color: var(--bg-overlay);
-            backdrop-filter: blur(3px);
-            -webkit-backdrop-filter: blur(3px);
-            z-index: var(--z-modal);
+            background-color: rgba(0,0,0,0.6);
+            backdrop-filter: blur(4px);
+            -webkit-backdrop-filter: blur(4px);
+            z-index: var(--z-sidebar);
             opacity: 0;
             pointer-events: none;
-            transition: opacity var(--transition-normal);
+            transition: opacity var(--duration-normal);
         }
+        .backdrop.visible { opacity: 1; pointer-events: auto; }
 
-        .overlay.active {
-            opacity: 1;
-            pointer-events: auto;
-        }
-
-        .sidebar {
+        .drawer {
             position: fixed;
             top: 0;
             bottom: 0;
             left: 0;
             width: 100%;
-            max-width: 380px;
+            max-width: 400px;
             background-color: var(--bg-surface);
-            border-right: 1px solid var(--border-color);
-            z-index: calc(var(--z-modal) + 1);
+            border-right: 1px solid var(--border-subtle);
+            z-index: calc(var(--z-sidebar) + 1);
             transform: translateX(-100%);
-            transition: transform var(--transition-normal);
+            transition: transform var(--duration-normal) var(--ease-out-expo);
             display: flex;
             flex-direction: column;
-            pointer-events: auto;
         }
 
-        .sidebar.right {
+        .drawer.right-side {
             left: auto;
             right: 0;
             border-right: none;
-            border-left: 1px solid var(--border-color);
+            border-left: 1px solid var(--border-subtle);
             transform: translateX(100%);
         }
 
-        .sidebar.active {
-            transform: translateX(0);
-            box-shadow: var(--shadow-lg);
-        }
+        .drawer.open { transform: translateX(0); box-shadow: var(--shadow-float); }
 
-        .sidebar-header {
-            padding: 20px 24px;
-            border-bottom: 1px solid var(--border-color);
+        .drawer-header {
+            padding: 24px;
+            border-bottom: 1px solid var(--border-subtle);
             display: flex;
             justify-content: space-between;
             align-items: center;
         }
 
-        .sidebar-title {
-            font-size: 18px;
-            font-weight: 600;
+        .drawer-title {
+            font-size: 20px;
+            font-weight: 700;
             display: flex;
             align-items: center;
-            gap: 10px;
+            gap: 12px;
         }
 
-        .close-btn {
-            width: 36px;
-            height: 36px;
+        .icon-btn {
+            width: 40px;
+            height: 40px;
             border-radius: 50%;
-            background-color: var(--bg-surface-light);
+            background-color: var(--bg-surface-elevated);
             display: flex;
             align-items: center;
             justify-content: center;
-            color: var(--text-secondary);
+            color: var(--text-muted);
             transition: all 0.2s;
         }
-        
-        .close-btn:hover { background-color: var(--border-color); color: white; }
+        .icon-btn:hover { background-color: var(--border-subtle); color: #fff; }
 
-        .sidebar-content {
+        .drawer-body {
             flex: 1;
             overflow-y: auto;
             padding: 24px;
         }
 
-        /* Sidebar Sectionlari */
-        .section-title {
-            font-size: 12px;
+        /* Settings Items */
+        .heading-sm {
+            font-size: 13px;
             text-transform: uppercase;
             letter-spacing: 1px;
-            color: var(--text-secondary);
+            color: var(--text-muted);
             margin-bottom: 16px;
             font-weight: 600;
         }
 
-        .grid-menu {
+        .action-grid {
             display: grid;
             grid-template-columns: repeat(2, 1fr);
             gap: 12px;
-            margin-bottom: 30px;
+            margin-bottom: 32px;
         }
 
-        .menu-card {
-            background-color: var(--bg-surface-light);
-            border: 1px solid var(--border-color);
+        .grid-card {
+            background-color: var(--bg-surface-elevated);
+            border: 1px solid var(--border-subtle);
             border-radius: var(--radius-md);
-            padding: 16px 10px;
+            padding: 20px 12px;
             display: flex;
             flex-direction: column;
             align-items: center;
-            gap: 10px;
+            gap: 12px;
             cursor: pointer;
             transition: all 0.2s;
-            font-size: 13px;
+            font-size: 14px;
             font-weight: 500;
         }
 
-        .menu-card:hover {
-            background-color: var(--border-color);
-            transform: translateY(-2px);
-        }
+        .grid-card:hover { border-color: var(--border-active); background-color: #2a2a2a; transform: translateY(-2px); }
+        .grid-card:active { transform: scale(0.96); }
         
-        .menu-card:active { transform: scale(0.95); }
-
-        .menu-card.danger {
-            color: var(--danger);
+        .grid-card.danger-zone {
+            color: var(--status-danger);
             border-color: rgba(239, 68, 68, 0.3);
             background-color: rgba(239, 68, 68, 0.05);
         }
 
-        /* Qalinlik Slayderi */
-        .slider-wrap {
+        .slider-box {
             display: flex;
             align-items: center;
             gap: 16px;
-            margin-bottom: 30px;
-            background-color: var(--bg-surface-light);
-            padding: 16px;
+            margin-bottom: 32px;
+            background-color: var(--bg-surface-elevated);
+            padding: 20px;
             border-radius: var(--radius-md);
         }
 
         input[type=range] {
             flex: 1;
-            height: 6px;
+            height: 8px;
             -webkit-appearance: none;
-            background: var(--border-color);
-            border-radius: 6px;
+            background: var(--border-subtle);
+            border-radius: 8px;
         }
         
         input[type=range]::-webkit-slider-thumb {
             -webkit-appearance: none;
-            width: 20px;
-            height: 20px;
+            width: 24px;
+            height: 24px;
             border-radius: 50%;
-            background: var(--accent-blue);
-            border: 3px solid white;
+            background: var(--accent-primary);
+            border: 4px solid var(--bg-surface);
             box-shadow: 0 2px 5px rgba(0,0,0,0.5);
             cursor: pointer;
         }
 
-        /* ==========================================================================
-           6. RANG TANLAGICH (COLOR WHEEL)
-           ========================================================================== */
-        .color-wheel-wrapper {
-            position: relative;
+        /* Color Picker */
+        .wheel-container {
             width: 100%;
             aspect-ratio: 1;
-            max-width: 260px;
-            margin: 0 auto 24px;
+            max-width: 280px;
+            margin: 0 auto 32px;
+            position: relative;
         }
 
-        #colorWheel {
+        #color-canvas {
             width: 100%;
             height: 100%;
             border-radius: 50%;
             cursor: crosshair;
-            box-shadow: 0 0 0 4px var(--bg-surface-light), var(--shadow-lg);
+            box-shadow: 0 0 0 6px var(--bg-surface-elevated), var(--shadow-float);
         }
 
-        .color-result {
+        .color-preview-box {
             display: flex;
             align-items: center;
             justify-content: space-between;
-            background-color: var(--bg-surface-light);
-            padding: 12px 16px;
+            background-color: var(--bg-surface-elevated);
+            padding: 16px 20px;
             border-radius: var(--radius-md);
-            margin-bottom: 24px;
+            margin-bottom: 32px;
+            font-weight: 500;
         }
 
-        .color-box {
-            width: 40px;
-            height: 40px;
-            border-radius: 10px;
+        .swatch-display {
+            width: 48px;
+            height: 48px;
+            border-radius: 12px;
             border: 2px solid rgba(255,255,255,0.2);
+            box-shadow: inset 0 0 10px rgba(0,0,0,0.5);
         }
 
-        .quick-colors {
+        .palette-grid {
             display: grid;
             grid-template-columns: repeat(5, 1fr);
-            gap: 10px;
+            gap: 12px;
         }
 
-        .quick-color-btn {
+        .palette-color {
             width: 100%;
             aspect-ratio: 1;
-            border-radius: 8px;
+            border-radius: 10px;
             cursor: pointer;
             border: 2px solid rgba(255,255,255,0.1);
             transition: transform 0.2s;
         }
-        .quick-color-btn:hover { transform: scale(1.1); border-color: white; }
+        .palette-color:hover { transform: scale(1.1); border-color: #fff; }
 
-        /* ==========================================================================
-           7. O'QUVCHILAR RO'YXATI
-           ========================================================================== */
-        .student-list {
+        /* Student List */
+        .user-list {
             display: flex;
             flex-direction: column;
-            gap: 10px;
+            gap: 12px;
         }
 
-        .student-item {
-            background-color: var(--bg-surface-light);
-            border: 1px solid var(--border-color);
+        .user-row {
+            background-color: var(--bg-surface-elevated);
+            border: 1px solid var(--border-subtle);
             border-radius: var(--radius-md);
-            padding: 12px 16px;
+            padding: 16px;
             display: flex;
             justify-content: space-between;
             align-items: center;
         }
 
-        .student-info {
+        .user-meta {
             display: flex;
             align-items: center;
-            gap: 12px;
+            gap: 16px;
         }
 
-        .student-avatar {
-            width: 36px;
-            height: 36px;
+        .user-avatar {
+            width: 44px;
+            height: 44px;
             border-radius: 50%;
-            background: linear-gradient(135deg, var(--accent-blue), #8b5cf6);
+            background: linear-gradient(135deg, var(--accent-primary), #8b5cf6);
             display: flex;
             align-items: center;
             justify-content: center;
-            font-weight: bold;
-            font-size: 15px;
-            color: white;
+            font-weight: 700;
+            font-size: 18px;
+            color: #fff;
             text-transform: uppercase;
+            box-shadow: var(--shadow-subtle);
         }
 
-        .perm-controls {
-            display: flex;
-            gap: 8px;
-        }
+        .perm-toggles { display: flex; gap: 10px; }
 
-        .perm-btn {
-            width: 36px;
-            height: 36px;
-            border-radius: 10px;
+        .toggle-btn {
+            width: 44px;
+            height: 44px;
+            border-radius: 12px;
             background-color: var(--bg-surface);
-            border: 1px solid var(--border-color);
+            border: 1px solid var(--border-subtle);
             display: flex;
             align-items: center;
             justify-content: center;
-            color: var(--text-secondary);
+            color: var(--text-muted);
             transition: all 0.2s;
         }
 
-        /* O'qituvchi boshqarsa cursor pointer bo'ladi */
-        .is-teacher .perm-btn { cursor: pointer; }
-        .is-teacher .perm-btn:hover { border-color: var(--text-secondary); }
+        .host-mode .toggle-btn { cursor: pointer; }
+        .host-mode .toggle-btn:hover { border-color: var(--text-main); color: var(--text-main); }
         
-        .perm-btn.granted {
-            background-color: var(--accent-blue-alpha);
-            color: var(--accent-blue);
+        .toggle-btn.is-active {
+            background-color: var(--accent-alpha);
+            color: var(--accent-primary);
             border-color: rgba(59, 130, 246, 0.4);
         }
 
-        /* ==========================================================================
-           8. CHAT PANELI
-           ========================================================================== */
-        .chat-container {
+        /* Chat System */
+        .chat-layout {
             display: flex;
             flex-direction: column;
             height: 100%;
         }
 
-        .chat-messages {
+        .chat-feed {
             flex: 1;
             overflow-y: auto;
-            padding: 20px;
+            padding: 24px;
             display: flex;
             flex-direction: column;
-            gap: 16px;
-            /* Scrollbar styling */
+            gap: 20px;
             scrollbar-width: thin;
-            scrollbar-color: var(--border-color) transparent;
+            scrollbar-color: var(--border-active) transparent;
         }
-        
-        .chat-messages::-webkit-scrollbar { width: 6px; }
-        .chat-messages::-webkit-scrollbar-thumb { background-color: var(--border-color); border-radius: 10px; }
+        .chat-feed::-webkit-scrollbar { width: 6px; }
+        .chat-feed::-webkit-scrollbar-thumb { background-color: var(--border-active); border-radius: 10px; }
 
-        .chat-bubble {
+        .msg-bubble {
             max-width: 85%;
-            padding: 12px 16px;
-            border-radius: 16px;
-            font-size: 14px;
+            padding: 14px 18px;
+            border-radius: 20px;
+            font-size: 15px;
             line-height: 1.5;
             position: relative;
-            animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            animation: msgPopIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
             word-wrap: break-word;
         }
 
-        @keyframes popIn {
+        @keyframes msgPopIn {
             from { opacity: 0; transform: scale(0.9) translateY(10px); }
             to { opacity: 1; transform: scale(1) translateY(0); }
         }
 
-        .chat-bubble.mine {
-            background-color: var(--accent-blue);
-            color: white;
+        .msg-mine {
+            background-color: var(--accent-primary);
+            color: #fff;
             align-self: flex-end;
             border-bottom-right-radius: 4px;
         }
 
-        .chat-bubble.others {
-            background-color: var(--bg-surface-light);
-            border: 1px solid var(--border-color);
+        .msg-other {
+            background-color: var(--bg-surface-elevated);
+            border: 1px solid var(--border-subtle);
             align-self: flex-start;
             border-bottom-left-radius: 4px;
         }
 
-        .chat-sender {
-            font-size: 11px;
+        .msg-author {
+            font-size: 12px;
             font-weight: 700;
-            margin-bottom: 4px;
-            color: var(--text-secondary);
+            margin-bottom: 6px;
+            color: var(--text-muted);
             display: flex;
             align-items: center;
-            gap: 4px;
+            gap: 6px;
         }
-        .chat-bubble.mine .chat-sender { color: rgba(255,255,255,0.8); }
+        .msg-mine .msg-author { color: rgba(255,255,255,0.8); }
 
-        .chat-time {
-            font-size: 10px;
+        .msg-timestamp {
+            font-size: 11px;
             opacity: 0.6;
             text-align: right;
-            margin-top: 6px;
+            margin-top: 8px;
         }
 
-        .chat-input-wrapper {
-            padding: 16px;
+        .chat-composer {
+            padding: 20px;
             background-color: var(--bg-surface);
-            border-top: 1px solid var(--border-color);
+            border-top: 1px solid var(--border-subtle);
             display: flex;
             gap: 12px;
         }
 
-        .chat-input {
+        .chat-input-field {
             flex: 1;
-            padding: 12px 16px;
-            background-color: var(--bg-surface-light);
-            border: 1px solid var(--border-color);
-            border-radius: 24px;
-            color: var(--text-primary);
-            font-size: 14px;
+            padding: 14px 20px;
+            background-color: var(--bg-surface-elevated);
+            border: 1px solid var(--border-subtle);
+            border-radius: 30px;
+            color: var(--text-main);
+            font-size: 15px;
             transition: border-color 0.2s;
         }
-        .chat-input:focus { border-color: var(--accent-blue); }
+        .chat-input-field:focus { border-color: var(--accent-primary); }
 
-        .chat-send-btn {
-            width: 46px;
-            height: 46px;
+        .send-btn {
+            width: 52px;
+            height: 52px;
             border-radius: 50%;
-            background-color: var(--accent-blue);
-            color: white;
+            background-color: var(--accent-primary);
+            color: #fff;
             display: flex;
             align-items: center;
             justify-content: center;
             transition: all 0.2s;
         }
-        .chat-send-btn:hover { background-color: var(--accent-blue-hover); transform: scale(1.05); }
+        .send-btn:hover { background-color: var(--accent-hover); transform: scale(1.05); }
 
-        /* ==========================================================================
-           9. MATN KIRITISH MODALI (TEXT TOOL)
-           ========================================================================== */
-        .text-modal {
+        /* Text Input Modal */
+        .text-dialog {
             background-color: var(--bg-surface);
-            border: 1px solid var(--border-color);
+            border: 1px solid var(--border-subtle);
             border-radius: var(--radius-lg);
-            padding: 24px;
+            padding: 32px;
             width: 90%;
-            max-width: 400px;
+            max-width: 420px;
             position: absolute;
             top: 50%;
             left: 50%;
-            transform: translate(-50%, -50%) scale(0.9);
+            transform: translate(-50%, -50%) scale(0.95);
             opacity: 0;
             pointer-events: none;
-            transition: all var(--transition-normal);
+            transition: all var(--duration-normal) var(--ease-out-expo);
             z-index: calc(var(--z-modal) + 2);
-            box-shadow: var(--shadow-lg);
+            box-shadow: var(--shadow-float);
         }
 
-        .text-modal.active {
+        .text-dialog.visible {
             transform: translate(-50%, -50%) scale(1);
             opacity: 1;
             pointer-events: auto;
         }
 
-        .text-modal textarea {
+        .text-dialog textarea {
             width: 100%;
-            background-color: var(--bg-dark);
-            border: 1px solid var(--border-color);
+            background-color: var(--bg-base);
+            border: 1px solid var(--border-subtle);
             border-radius: var(--radius-md);
-            padding: 16px;
-            color: var(--text-primary);
+            padding: 20px;
+            color: var(--text-main);
             font-size: 16px;
-            min-height: 100px;
+            min-height: 120px;
             resize: none;
-            margin: 16px 0;
+            margin: 24px 0;
         }
-        .text-modal textarea:focus { border-color: var(--accent-blue); }
+        .text-dialog textarea:focus { border-color: var(--accent-primary); }
 
-        /* ==========================================================================
-           10. TOAST (XABARNOMALAR)
-           ========================================================================== */
-        #toast-container {
+        /* Toast Notifications */
+        #toast-zone {
             position: fixed;
-            top: 20px;
+            top: 24px;
             left: 50%;
             transform: translateX(-50%);
             z-index: var(--z-toast);
             display: flex;
             flex-direction: column;
-            gap: 10px;
+            gap: 12px;
             pointer-events: none;
         }
 
-        .toast {
-            background-color: var(--bg-surface-light);
-            border-left: 4px solid var(--accent-blue);
-            color: var(--text-primary);
-            padding: 12px 20px;
+        .toast-msg {
+            background-color: var(--bg-surface-elevated);
+            border-left: 4px solid var(--accent-primary);
+            color: var(--text-main);
+            padding: 16px 24px;
             border-radius: var(--radius-sm);
-            box-shadow: var(--shadow-md);
-            font-size: 14px;
+            box-shadow: var(--shadow-float);
+            font-size: 15px;
             font-weight: 500;
             display: flex;
             align-items: center;
-            gap: 10px;
-            animation: slideDownToast 0.3s ease forwards;
-            pointer-events: auto;
+            gap: 12px;
+            animation: toastDrop 0.4s var(--ease-out-expo) forwards;
         }
 
-        .toast.error { border-left-color: var(--danger); }
-        .toast.success { border-left-color: var(--success); }
+        .toast-msg.error { border-left-color: var(--status-danger); }
 
-        @keyframes slideDownToast {
-            from { opacity: 0; transform: translateY(-20px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-        @keyframes fadeOutToast {
-            to { opacity: 0; transform: translateY(-10px); }
+        @keyframes toastDrop {
+            from { opacity: 0; transform: translateY(-30px) scale(0.9); }
+            to { opacity: 1; transform: translateY(0) scale(1); }
         }
 
-        /* ==========================================================================
-           11. RESPONSIVE DIZAYN (MEDIA QUERIES)
-           ========================================================================== */
+        /* WebRTC Hidden Audio */
+        #rtc-audio-pool { display: none; }
+
+        /* Responsive qoidalar */
         @media (max-width: 768px) {
-            .sidebar { max-width: 100%; } /* Mobilda sidebar to'liq ekran */
-            .status-bar { flex-direction: column; gap: 8px; }
-            .toolbar-wrapper { padding: 0 8px; bottom: 16px; }
-            .tool-btn { width: 40px; height: 40px; }
-            .audio-monitor { display: none; } /* Mobilda joy tejash uchun audio to'lqinni yashiramiz */
-            
-            .auth-card { padding: 30px 20px; border-radius: 0; min-height: 100vh; display: flex; flex-direction: column; justify-content: center; border: none; }
+            .drawer { max-width: 100%; }
+            .top-bar { flex-direction: column; gap: 10px; }
+            .bottom-dock { padding: 0 10px; bottom: 16px; }
+            .action-btn { width: 42px; height: 42px; }
+            .audio-wave { display: none; } /* Mobilda joyni tejash uchun to'lqin yashiriladi */
+            .auth-container { border: none; border-radius: 0; min-height: 100vh; display: flex; flex-direction: column; justify-content: center; }
         }
-        
-        @media (max-width: 480px) {
-            .grid-menu { grid-template-columns: 1fr; } /* Mobilda tugmalar ketma-ket */
-        }
-
-        /* WebRTC uchun yashirin audio elementlar konteyneri */
-        #hidden-audio-container { display: none; }
     </style>
 </head>
 <body>
 
-    <div id="hidden-audio-container"></div>
+    <div id="rtc-audio-pool"></div>
+    <div id="toast-zone"></div>
 
-    <div id="toast-container"></div>
-
-    <div id="welcome-screen">
-        <div class="auth-card">
-            <div class="auth-header">
-                <h1 class="auth-title">MR Board</h1>
-                <p class="auth-subtitle">Professional Onlayn Doska va Audio Aloqa</p>
-            </div>
+    <div id="auth-screen">
+        <div class="auth-container">
+            <h1 class="brand-title">MR Board Pro</h1>
+            <p class="brand-subtitle">Guruhlar uchun ideal hamkorlik doskasi</p>
             
-            <div class="form-group">
-                <label class="form-label">Ismingiz</label>
-                <input type="text" id="input-username" class="form-input" placeholder="Masalan: Alisher" autocomplete="off" spellcheck="false">
+            <div class="input-group">
+                <label class="input-label">Ismingiz</label>
+                <input type="text" id="inp-name" class="auth-input" placeholder="Ismni kiriting" autocomplete="off" spellcheck="false">
             </div>
 
-            <button id="btn-create-room" class="btn-main btn-primary">
-                <i data-lucide="plus-circle"></i> Yangi xona ochish (O'qituvchi)
+            <button id="btn-host" class="btn-primary">
+                <i data-lucide="crown"></i> Host bo'lish (Yangi xona)
             </button>
 
-            <div class="auth-divider"><span>YOKI MAVJUD XONAGA KIRISH</span></div>
+            <div class="divider-text"><span>YOKI XONAGA QO'SHILISH</span></div>
 
-            <div class="form-group">
-                <label class="form-label">Xona Kodi</label>
-                <input type="text" id="input-roomid" class="form-input" placeholder="Xona kodi (Masalan: MR-1234)" autocomplete="off" style="text-transform: uppercase;">
+            <div class="input-group">
+                <label class="input-label">Xona Kodi</label>
+                <input type="text" id="inp-room" class="auth-input" placeholder="Masalan: MR-X8A2" autocomplete="off" style="text-transform: uppercase;">
             </div>
 
-            <button id="btn-join-room" class="btn-main btn-secondary">
-                <i data-lucide="log-in"></i> Xonaga kirish (O'quvchi)
+            <button id="btn-join" class="btn-secondary">
+                <i data-lucide="log-in"></i> Xonaga kirish
             </button>
         </div>
     </div>
 
-    <div id="canvas-container">
+    <div id="canvas-wrapper">
         <canvas id="main-canvas"></canvas>
     </div>
 
-    <div id="app-ui">
+    <div id="ui-layer">
         
-        <div class="status-bar">
-            <div class="status-group">
-                <div class="status-badge" title="Xona Kodi">
-                    <i data-lucide="hash" size="14" style="color: var(--text-secondary)"></i>
-                    <span id="ui-room-id" style="font-family: monospace; letter-spacing: 1px;">KUTILMOQDA</span>
+        <div class="top-bar">
+            <div class="pill-group">
+                <div class="status-pill" title="Xona Kodi">
+                    <i data-lucide="hash" size="16" style="color: var(--text-muted)"></i>
+                    <span id="ui-roomcode" style="font-family: monospace; letter-spacing: 1.5px;">---</span>
                 </div>
-                <div class="status-badge" title="Kamera masshtabi">
-                    <i data-lucide="search" size="14" style="color: var(--text-secondary)"></i>
-                    <span id="ui-zoom-level">100%</span>
+                <div class="status-pill">
+                    <i data-lucide="search" size="16" style="color: var(--text-muted)"></i>
+                    <span id="ui-zoom">100%</span>
                 </div>
             </div>
-            <div class="status-group">
-                <div class="status-badge" id="ui-role-badge">
-                    <i data-lucide="eye" size="14"></i> Kuzatuvchi
+            <div class="pill-group">
+                <div class="status-pill" id="ui-role">
+                    <i data-lucide="eye" size="16"></i> Kuzatuvchi
                 </div>
             </div>
         </div>
 
-        <div class="toolbar-wrapper">
-            <div class="main-toolbar">
-                <button class="tool-btn" id="btn-open-settings" title="Asboblar va Sozlamalar"><i data-lucide="settings-2"></i></button>
-                <button class="tool-btn" id="btn-open-colors" title="Rang tanlash">
-                    <div class="color-preview-btn" id="ui-current-color" style="background-color: #3b82f6;"></div>
+        <div class="bottom-dock">
+            <div class="toolbar-glass">
+                <button class="action-btn" id="t-settings" title="Sozlamalar"><i data-lucide="settings-2"></i></button>
+                <button class="action-btn" id="t-colors" title="Ranglar">
+                    <div class="color-dot" id="ui-color-dot" style="background-color: #3b82f6;"></div>
                 </button>
 
-                <div class="tool-separator"></div>
+                <div class="toolbar-divider"></div>
 
-                <button class="tool-btn active" data-tool="draw" title="Qalam"><i data-lucide="pencil"></i></button>
-                <button class="tool-btn" data-tool="erase" title="O'chirg'ich"><i data-lucide="eraser"></i></button>
-                <button class="tool-btn" data-tool="pan" title="Surish (Pan)"><i data-lucide="hand"></i></button>
-                <button class="tool-btn" data-tool="text" title="Matn yozish"><i data-lucide="type"></i></button>
-                
-                <button class="tool-btn" id="btn-undo" title="Oxirgi amalni bekor qilish"><i data-lucide="undo-2"></i></button>
+                <button class="action-btn active-tool" data-action="draw" title="Qalam"><i data-lucide="pencil"></i></button>
+                <button class="action-btn" data-action="erase" title="O'chirg'ich"><i data-lucide="eraser"></i></button>
+                <button class="action-btn" data-action="pan" title="Surish"><i data-lucide="hand"></i></button>
+                <button class="action-btn" data-action="text" title="Matn"><i data-lucide="type"></i></button>
+                <button class="action-btn" id="t-undo" title="Bekor qilish"><i data-lucide="undo-2"></i></button>
 
-                <div class="tool-separator"></div>
+                <div class="toolbar-divider"></div>
 
-                <div class="audio-monitor">
-                    <div class="bars-container">
-                        <div class="audio-bar"></div><div class="audio-bar"></div><div class="audio-bar"></div>
-                        <div class="audio-bar"></div><div class="audio-bar"></div><div class="audio-bar"></div>
-                        <div class="audio-bar"></div><div class="audio-bar"></div>
+                <div class="audio-wave">
+                    <div class="wave-bars" id="audio-bars">
+                        <div class="w-bar"></div><div class="w-bar"></div><div class="w-bar"></div>
+                        <div class="w-bar"></div><div class="w-bar"></div><div class="w-bar"></div>
+                        <div class="w-bar"></div><div class="w-bar"></div>
                     </div>
-                    <span class="db-text" id="ui-db-level">-∞ dB</span>
+                    <span class="db-label" id="audio-db">-∞ dB</span>
                 </div>
 
-                <button class="tool-btn mic-muted" id="btn-toggle-mic" title="Mikrofon"><i data-lucide="mic-off"></i></button>
+                <button class="action-btn mic-off" id="t-mic" title="Mikrofon"><i data-lucide="mic-off"></i></button>
                 
-                <button class="tool-btn" id="btn-open-chat" title="Chat">
+                <button class="action-btn" id="t-chat" title="Chat">
                     <i data-lucide="message-square"></i>
-                    <div class="badge-count" id="badge-chat" style="display: none;">0</div>
+                    <div class="notification-badge" id="badge-chat" style="display: none;">0</div>
                 </button>
                 
-                <button class="tool-btn" id="btn-open-students" title="O'quvchilar" style="display: none;">
+                <button class="action-btn" id="t-users" title="Guruh a'zolari" style="display: none;">
                     <i data-lucide="users"></i>
-                    <div class="badge-count" id="badge-students">0</div>
+                    <div class="notification-badge" id="badge-users">0</div>
                 </button>
                 
-                <button class="tool-btn" id="btn-exit" title="Chiqish"><i data-lucide="log-out"></i></button>
+                <button class="action-btn" id="t-exit" title="Chiqish"><i data-lucide="log-out"></i></button>
             </div>
         </div>
-
     </div>
 
-    <div class="overlay" id="main-overlay"></div>
+    <div class="backdrop" id="ui-backdrop"></div>
 
-    <div class="sidebar" id="sidebar-settings">
-        <div class="sidebar-header">
-            <h2 class="sidebar-title"><i data-lucide="settings"></i> Sozlamalar</h2>
-            <button class="close-btn" data-close><i data-lucide="x"></i></button>
+    <div class="drawer" id="side-settings">
+        <div class="drawer-header">
+            <h2 class="drawer-title"><i data-lucide="settings"></i> Sozlamalar</h2>
+            <button class="icon-btn" data-close-sidebar><i data-lucide="x"></i></button>
         </div>
-        <div class="sidebar-content">
-            
-            <div class="section-title">Qalam Qalinligi</div>
-            <div class="slider-wrap">
-                <i data-lucide="pen-tool" size="18" style="color: var(--text-secondary)"></i>
-                <input type="range" id="input-pen-size" min="1" max="40" value="4">
-                <span style="font-family: monospace; font-size: 14px; width: 35px; text-align: right;"><span id="ui-pen-size-val">4</span>px</span>
+        <div class="drawer-body">
+            <div class="heading-sm">Qalam Qalinligi</div>
+            <div class="slider-box">
+                <i data-lucide="pen-tool" size="20" style="color: var(--text-muted)"></i>
+                <input type="range" id="inp-size" min="1" max="50" value="4">
+                <span style="font-family: monospace; font-size: 15px; width: 45px; text-align: right;"><span id="ui-size-val">4</span>px</span>
             </div>
 
-            <div class="section-title">Amallar</div>
-            <div class="grid-menu">
-                <button class="menu-card" id="menu-btn-undo">
-                    <i data-lucide="undo-2" size="24"></i><span>Bekor qilish</span>
-                </button>
-                <button class="menu-card" id="menu-btn-image">
-                    <i data-lucide="image" size="24"></i><span>Rasm yuklash</span>
-                </button>
-                <button class="menu-card" id="menu-btn-center">
-                    <i data-lucide="target" size="24"></i><span>Markazga qaytish</span>
-                </button>
-                <button class="menu-card" id="menu-btn-export">
-                    <i data-lucide="download" size="24"></i><span>Rasmga saqlash</span>
-                </button>
+            <div class="heading-sm">Harakatlar</div>
+            <div class="action-grid">
+                <button class="grid-card" id="act-undo"><i data-lucide="undo-2" size="24"></i>Bekor qilish</button>
+                <button class="grid-card" id="act-image"><i data-lucide="image" size="24"></i>Rasm yuklash</button>
+                <button class="grid-card" id="act-center"><i data-lucide="target" size="24"></i>Markazlashtirish</button>
+                <button class="grid-card" id="act-export"><i data-lucide="download" size="24"></i>Saqlash (PNG)</button>
             </div>
 
-            <div id="teacher-controls-area" style="display: none;">
-                <div class="section-title" style="color: var(--danger); margin-top: 20px;">O'qituvchi Boshqaruvi</div>
-                <div class="grid-menu">
-                    <button class="menu-card danger" id="menu-btn-clear">
-                        <i data-lucide="trash-2" size="24"></i><span>Doskani Tozalash</span>
+            <div id="host-controls" style="display: none;">
+                <div class="heading-sm" style="color: var(--status-danger); margin-top: 24px;">Host Boshqaruvi</div>
+                <div class="action-grid" style="grid-template-columns: 1fr;">
+                    <button class="grid-card danger-zone" id="act-clear">
+                        <i data-lucide="trash-2" size="24"></i>Barcha ma'lumotlarni o'chirish
                     </button>
                 </div>
             </div>
-
         </div>
     </div>
 
-    <div class="sidebar" id="sidebar-colors">
-        <div class="sidebar-header">
-            <h2 class="sidebar-title"><i data-lucide="palette"></i> Ranglar</h2>
-            <button class="close-btn" data-close><i data-lucide="x"></i></button>
+    <div class="drawer" id="side-colors">
+        <div class="drawer-header">
+            <h2 class="drawer-title"><i data-lucide="palette"></i> Ranglar</h2>
+            <button class="icon-btn" data-close-sidebar><i data-lucide="x"></i></button>
         </div>
-        <div class="sidebar-content">
-            
-            <div class="color-wheel-wrapper">
-                <canvas id="colorWheel" width="260" height="260"></canvas>
+        <div class="drawer-body">
+            <div class="wheel-container">
+                <canvas id="color-canvas" width="280" height="280"></canvas>
             </div>
             
-            <div class="section-title">Yorug'lik (Brightness)</div>
-            <div class="slider-wrap">
-                <i data-lucide="sun" size="18" style="color: var(--text-secondary)"></i>
-                <input type="range" id="input-brightness" min="0" max="100" value="100">
+            <div class="heading-sm">Yorug'lik</div>
+            <div class="slider-box">
+                <i data-lucide="sun" size="20" style="color: var(--text-muted)"></i>
+                <input type="range" id="inp-bright" min="0" max="100" value="100">
             </div>
 
-            <div class="color-result">
-                <span style="font-weight: 500;">Tanlangan Rang:</span>
-                <div class="color-box" id="ui-color-preview" style="background-color: #3b82f6;"></div>
+            <div class="color-preview-box">
+                <span>Hozirgi Rang:</span>
+                <div class="swatch-display" id="ui-color-preview" style="background-color: #3b82f6;"></div>
             </div>
 
-            <div class="section-title">Tezkor Ranglar</div>
-            <div class="quick-colors" id="quick-colors-container">
-                </div>
-
+            <div class="heading-sm">Palitra</div>
+            <div class="palette-grid" id="color-palette"></div>
         </div>
     </div>
 
-    <div class="sidebar right" id="sidebar-students">
-        <div class="sidebar-header">
-            <h2 class="sidebar-title"><i data-lucide="users"></i> O'quvchilar</h2>
-            <button class="close-btn" data-close><i data-lucide="x"></i></button>
+    <div class="drawer right-side" id="side-users">
+        <div class="drawer-header">
+            <h2 class="drawer-title"><i data-lucide="users"></i> Guruh a'zolari</h2>
+            <button class="icon-btn" data-close-sidebar><i data-lucide="x"></i></button>
         </div>
-        <div class="sidebar-content">
-            <div class="student-list" id="ui-student-list">
-                </div>
+        <div class="drawer-body">
+            <div class="user-list" id="ui-users-list"></div>
         </div>
     </div>
 
-    <div class="sidebar right" id="sidebar-chat">
-        <div class="sidebar-header">
-            <h2 class="sidebar-title"><i data-lucide="message-square"></i> Chat</h2>
-            <button class="close-btn" data-close><i data-lucide="x"></i></button>
+    <div class="drawer right-side" id="side-chat">
+        <div class="drawer-header">
+            <h2 class="drawer-title"><i data-lucide="message-square"></i> Chat</h2>
+            <button class="icon-btn" data-close-sidebar><i data-lucide="x"></i></button>
         </div>
-        <div class="chat-container">
-            <div class="chat-messages" id="ui-chat-messages">
-                </div>
-            <div class="chat-input-wrapper">
-                <input type="text" id="input-chat" class="chat-input" placeholder="Xabar yozing..." maxlength="500">
-                <button class="chat-send-btn" id="btn-send-chat"><i data-lucide="send" size="18"></i></button>
+        <div class="chat-layout">
+            <div class="chat-feed" id="ui-chat-feed"></div>
+            <div class="chat-composer">
+                <input type="text" id="inp-chat-msg" class="chat-input-field" placeholder="Xabar yozing..." autocomplete="off">
+                <button class="send-btn" id="btn-send"><i data-lucide="send" size="20"></i></button>
             </div>
         </div>
     </div>
 
-    <div class="text-modal" id="modal-text">
-        <h3 style="font-size: 18px; font-weight: 600;">Doskaga matn yozish</h3>
-        <textarea id="input-canvas-text" placeholder="Matnni bu yerga kiriting..."></textarea>
-        <div style="display: flex; justify-content: flex-end; gap: 12px;">
-            <button class="btn-main btn-secondary" id="btn-cancel-text" style="width: auto; padding: 10px 20px;">Bekor qilish</button>
-            <button class="btn-main btn-primary" id="btn-add-text" style="width: auto; padding: 10px 20px; margin-bottom:0;">Qo'shish</button>
+    <div class="text-dialog" id="dialog-text">
+        <h3 style="font-size: 20px; font-weight: 700;">Matn kiritish</h3>
+        <textarea id="inp-text-content" placeholder="Doskaga nima yozmoqchisiz?"></textarea>
+        <div style="display: flex; justify-content: flex-end; gap: 16px;">
+            <button class="btn-secondary" id="btn-text-cancel" style="width: auto; padding: 12px 24px;">Bekor qilish</button>
+            <button class="btn-primary" id="btn-text-ok" style="width: auto; padding: 12px 24px; margin: 0;">Qo'shish</button>
         </div>
     </div>
 
     <script>
         /**
-         * ============================================================================
-         * MR BOARD CORE SYSTEM
-         * Architecture: Object-Oriented, Event-Driven
-         * Technologies: HTML5 Canvas, Firebase Realtime Database, WebRTC
-         * ============================================================================
+         * MR Board Pro - Single File Application Logic
+         * Uses IIFE to prevent global scope pollution and ensure strict encapsulation.
          */
         (function() {
             'use strict';
 
-            // SVG Ikonkalarni yuklash
             lucide.createIcons();
 
             // ==========================================
-            // 1. UTILITIES (Yordamchi Funksiyalar)
+            // 1. CORE UTILITIES
             // ==========================================
-            const Utils = {
-                /** Performans uchun tez-tez chaqiriluvchi funksiyalarni cheklash */
-                throttle(func, limit) {
+            const Core = {
+                throttle: (func, limit) => {
                     let inThrottle;
                     return function(...args) {
                         if (!inThrottle) {
@@ -1166,1298 +1077,921 @@
                         }
                     };
                 },
-                /** Noyob ID generatsiya qilish */
-                generateId(prefix = 'id') {
-                    return `${prefix}_${Math.random().toString(36).substr(2, 9)}_${Date.now()}`;
+                generateId: (prefix = 'ID') => `${prefix}_${Math.random().toString(36).substr(2, 9)}_${Date.now()}`,
+                sanitizeHTML: (str) => {
+                    const temp = document.createElement('div');
+                    temp.textContent = str;
+                    return temp.innerHTML;
                 },
-                /** XSS hujumlaridan himoya qilish uchun matnni tozalash */
-                escapeHTML(str) {
-                    const div = document.createElement('div');
-                    div.innerText = str;
-                    return div.innerHTML;
-                },
-                /** Vaqtni formatlash (14:30) */
-                formatTime(date = new Date()) {
-                    return date.toLocaleTimeString('uz-UZ', { hour: '2-digit', minute: '2-digit' });
-                }
+                getTimeStr: () => new Date().toLocaleTimeString('uz-UZ', { hour: '2-digit', minute: '2-digit' })
             };
 
             // ==========================================
-            // 2. STATE MANAGEMENT (Ilova Holati)
+            // 2. STATE MANAGEMENT (Store)
             // ==========================================
-            class Store {
+            class StateManager {
                 constructor() {
-                    // Foydalanuvchi va Xona
-                    this.userId = Utils.generateId('user');
-                    this.userName = '';
-                    this.isTeacher = false;
+                    // Auth & Room
+                    this.uid = Core.generateId('USR');
+                    this.uname = '';
+                    this.isHost = false;
                     this.roomId = '';
 
-                    // Ruxsatnomalar
-                    this.canDraw = false;
-                    this.canSpeak = false;
+                    // Permissions (For participants)
+                    this.permDraw = false;
+                    this.permSpeak = false;
 
-                    // Qurilma / Asboblar
-                    this.isMicOn = false;
-                    this.currentTool = 'draw'; // draw, erase, pan, text
-                    this.currentColor = '#3b82f6';
-                    this.penSize = 4;
-                    
-                    // Kamera (Transform)
-                    this.camera = { x: 0, y: 0, zoom: 1.0 };
-                    
-                    // Ma'lumotlar
-                    this.elements = []; // Chiziqlar, Rasmlar, Matnlar
-                    this.activePaths = {}; // Ayni paytda chizilayotgan chiziqlar
-                    this.cursors = {}; // Boshqa foydalanuvchilar kursorlari
-                    this.students = {}; // Xonadagi barcha odamlar
-                    
-                    // Vaqtinchalik UI holati
-                    this.textDropPosition = null;
+                    // Physical Toggles
+                    this.micActive = false;
                     this.unreadChats = 0;
+
+                    // Canvas Tools
+                    this.tool = 'draw';
+                    this.color = '#3b82f6';
+                    this.size = 4;
+                    this.camera = { x: 0, y: 0, zoom: 1 };
+
+                    // Data Pools
+                    this.elements = [];
+                    this.livePaths = {};
+                    this.cursors = {};
+                    this.peers = {}; // Network peers
+                    
+                    // Temp
+                    this.textPos = null;
                 }
 
-                get hasDrawPerm() { return this.isTeacher || this.canDraw; }
-                get hasSpeakPerm() { return this.isTeacher || this.canSpeak; }
+                get canDraw() { return this.isHost || this.permDraw; }
+                get canSpeak() { return this.isHost || this.permSpeak; }
             }
-            const state = new Store();
+            const AppState = new StateManager();
 
             // ==========================================
-            // 3. UI BOSHQRUVI (DOM Manipulation)
+            // 3. UI CONTROLLER (DOM Management)
             // ==========================================
-            class UIManager {
+            class UIController {
                 constructor() {
-                    this.initElements();
+                    this.initDOM();
                     this.bindEvents();
                 }
 
-                initElements() {
+                initDOM() {
                     this.els = {
-                        // Oynalar
-                        welcomeScreen: document.getElementById('welcome-screen'),
-                        appUI: document.getElementById('app-ui'),
-                        overlay: document.getElementById('main-overlay'),
-                        modalText: document.getElementById('modal-text'),
+                        // Views
+                        authView: document.getElementById('auth-screen'),
+                        uiLayer: document.getElementById('ui-layer'),
+                        backdrop: document.getElementById('ui-backdrop'),
+                        txtDialog: document.getElementById('dialog-text'),
                         
-                        // Yon menyular
-                        sidebars: document.querySelectorAll('.sidebar'),
+                        // Sidebars
+                        sidebars: document.querySelectorAll('.drawer'),
                         
                         // Inputs
-                        usernameInp: document.getElementById('input-username'),
-                        roomidInp: document.getElementById('input-roomid'),
-                        chatInp: document.getElementById('input-chat'),
-                        canvasTextInp: document.getElementById('input-canvas-text'),
+                        inpName: document.getElementById('inp-name'),
+                        inpRoom: document.getElementById('inp-room'),
+                        inpChat: document.getElementById('inp-chat-msg'),
+                        inpTxt: document.getElementById('inp-text-content'),
                         
-                        // Tugmalar (Welcome)
-                        btnCreate: document.getElementById('btn-create-room'),
-                        btnJoin: document.getElementById('btn-join-room'),
-                        
-                        // Toolbar tugmalar
-                        btnMic: document.getElementById('btn-toggle-mic'),
-                        btnUndo: document.getElementById('btn-undo'),
-                        btnExit: document.getElementById('btn-exit'),
-                        
-                        // UI matnlar
-                        uiRoomId: document.getElementById('ui-room-id'),
-                        uiZoom: document.getElementById('ui-zoom-level'),
-                        uiRole: document.getElementById('ui-role-badge'),
-                        uiDbLevel: document.getElementById('ui-db-level')
+                        // Badges & Status
+                        roomIdStr: document.getElementById('ui-roomcode'),
+                        zoomStr: document.getElementById('ui-zoom'),
+                        roleStr: document.getElementById('ui-role'),
+                        badgeChat: document.getElementById('badge-chat'),
+                        badgeUsers: document.getElementById('badge-users'),
+                        micBtn: document.getElementById('t-mic')
                     };
                 }
 
                 bindEvents() {
                     // Auth
-                    this.els.btnCreate.addEventListener('click', () => this.handleAuth(true));
-                    this.els.btnJoin.addEventListener('click', () => this.handleAuth(false));
+                    document.getElementById('btn-host').onclick = () => this.handleAuth(true);
+                    document.getElementById('btn-join').onclick = () => this.handleAuth(false);
 
-                    // Toolbar Sidebar Toggles
-                    document.getElementById('btn-open-settings').onclick = () => this.openSidebar('sidebar-settings');
-                    document.getElementById('btn-open-colors').onclick = () => this.openSidebar('sidebar-colors');
-                    document.getElementById('btn-open-chat').onclick = () => this.openSidebar('sidebar-chat');
-                    document.getElementById('btn-open-students').onclick = () => this.openSidebar('sidebar-students');
+                    // Sidebar Toggles
+                    const opens = {
+                        't-settings': 'side-settings',
+                        't-colors': 'side-colors',
+                        't-chat': 'side-chat',
+                        't-users': 'side-users'
+                    };
+                    for (let [btnId, sideId] of Object.entries(opens)) {
+                        document.getElementById(btnId).onclick = () => this.openSidebar(sideId);
+                    }
 
-                    // Yopish tugmalari
-                    document.querySelectorAll('[data-close]').forEach(btn => {
-                        btn.onclick = () => this.closeAllSidebars();
-                    });
-                    this.els.overlay.onclick = () => this.closeAllSidebars();
+                    // Closers
+                    document.querySelectorAll('[data-close-sidebar]').forEach(b => b.onclick = () => this.closeAll());
+                    this.els.backdrop.onclick = () => this.closeAll();
 
-                    // Asboblar
-                    document.querySelectorAll('[data-tool]').forEach(btn => {
-                        btn.onclick = () => {
-                            this.setTool(btn.getAttribute('data-tool'));
-                            this.closeAllSidebars();
+                    // Tool Selectors
+                    document.querySelectorAll('[data-action]').forEach(b => {
+                        b.onclick = () => {
+                            this.setTool(b.dataset.action);
+                            this.closeAll();
                         };
                     });
 
-                    // Qalinlik
-                    const sizeSlider = document.getElementById('input-pen-size');
-                    sizeSlider.oninput = (e) => {
-                        state.penSize = parseInt(e.target.value);
-                        document.getElementById('ui-pen-size-val').innerText = state.penSize;
+                    // Pen Size
+                    document.getElementById('inp-size').oninput = (e) => {
+                        AppState.size = parseInt(e.target.value);
+                        document.getElementById('ui-size-val').innerText = AppState.size;
                     };
 
-                    // Menyudagi amallar
-                    document.getElementById('menu-btn-undo').onclick = () => { dbService.undoMyLast(); this.closeAllSidebars(); };
-                    document.getElementById('btn-undo').onclick = () => dbService.undoMyLast();
-                    document.getElementById('menu-btn-center').onclick = () => {
-                        state.camera = { x: 0, y: 0, zoom: 1 };
-                        canvasEngine.requestRender();
-                        this.updateZoomText();
-                        dbService.syncCamera();
-                        this.closeAllSidebars();
+                    // Action Grid
+                    document.getElementById('act-undo').onclick = () => { FirebaseEngine.undo(); this.closeAll(); };
+                    document.getElementById('t-undo').onclick = () => FirebaseEngine.undo();
+                    document.getElementById('act-clear').onclick = () => { FirebaseEngine.clearAll(); this.closeAll(); };
+                    document.getElementById('act-image').onclick = () => { this.uploadImage(); this.closeAll(); };
+                    document.getElementById('act-center').onclick = () => {
+                        AppState.camera = { x: 0, y: 0, zoom: 1 };
+                        CanvasEngine.requestRedraw();
+                        this.updateZoom();
+                        FirebaseEngine.syncCamera();
+                        this.closeAll();
                     };
-                    document.getElementById('menu-btn-clear').onclick = () => { dbService.clearBoard(); this.closeAllSidebars(); };
-                    document.getElementById('menu-btn-image').onclick = () => { this.handleImageUpload(); this.closeAllSidebars(); };
-                    document.getElementById('menu-btn-export').onclick = () => {
-                        const link = document.createElement('a');
-                        link.download = `MR_Board_${Date.now()}.png`;
-                        link.href = document.getElementById('main-canvas').toDataURL('image/png');
-                        link.click();
-                        this.closeAllSidebars();
+                    document.getElementById('act-export').onclick = () => {
+                        const a = document.createElement('a');
+                        a.download = `MR_Board_${Date.now()}.png`;
+                        a.href = document.getElementById('main-canvas').toDataURL('image/png');
+                        a.click();
+                        this.closeAll();
                     };
 
-                    // Matn Modali
-                    document.getElementById('btn-cancel-text').onclick = () => this.hideTextModal();
-                    document.getElementById('btn-add-text').onclick = () => {
-                        const text = this.els.canvasTextInp.value.trim();
-                        if (text && state.textDropPosition) {
-                            dbService.saveElement({
-                                type: 'text',
-                                text: text,
-                                x: state.textDropPosition.x,
-                                y: state.textDropPosition.y,
-                                size: state.penSize * 3 + 12, // Qalinlikka mos shrift kattaligi
-                                color: state.currentColor
+                    // Text Dialog
+                    document.getElementById('btn-text-cancel').onclick = () => this.hideTextDialog();
+                    document.getElementById('btn-text-ok').onclick = () => {
+                        const txt = this.els.inpTxt.value.trim();
+                        if (txt && AppState.textPos) {
+                            FirebaseEngine.pushElement({
+                                type: 'text', text: txt,
+                                x: AppState.textPos.x, y: AppState.textPos.y,
+                                size: AppState.size * 3 + 14, color: AppState.color
                             });
                         }
-                        this.hideTextModal();
+                        this.hideTextDialog();
                     };
 
                     // Chat
-                    document.getElementById('btn-send-chat').onclick = () => this.sendChat();
-                    this.els.chatInp.onkeypress = (e) => { if (e.key === 'Enter') this.sendChat(); };
+                    document.getElementById('btn-send').onclick = () => this.sendMsg();
+                    this.els.inpChat.onkeypress = (e) => { if (e.key === 'Enter') this.sendMsg(); };
 
-                    // Mic
-                    this.els.btnMic.onclick = () => audioManager.toggleMic();
-
-                    // Exit
-                    this.els.btnExit.onclick = () => {
-                        if (confirm('Xonadan chiqmoqchimisiz?')) window.location.reload();
+                    // Mic & Exit
+                    this.els.micBtn.onclick = () => AudioEngine.toggle();
+                    document.getElementById('t-exit').onclick = () => {
+                        if(confirm('Chiqishni tasdiqlaysizmi?')) location.reload();
                     };
                 }
 
-                // ---- Auth Logic ----
-                handleAuth(isCreating) {
-                    const name = this.els.usernameInp.value.trim();
-                    if (!name) { this.showToast("Iltimos ismingizni kiriting", "error"); return; }
-                    
-                    let roomId;
-                    if (isCreating) {
-                        roomId = 'MR-' + Math.floor(1000 + Math.random() * 9000);
-                        state.isTeacher = true;
-                    } else {
-                        roomId = this.els.roomidInp.value.trim().toUpperCase();
-                        if (!roomId) { this.showToast("Xona kodini kiriting", "error"); return; }
-                        state.isTeacher = false;
-                    }
+                // --- Auth ---
+                handleAuth(isHost) {
+                    const name = this.els.inpName.value.trim();
+                    if (!name) return this.toast("Ism kiriting", "error");
 
-                    state.userName = name;
-                    this.startGame(roomId);
+                    let code = isHost ? `MR-${Math.floor(1000 + Math.random() * 9000)}` : this.els.inpRoom.value.trim().toUpperCase();
+                    if (!code) return this.toast("Xona kodini kiriting", "error");
+
+                    AppState.uname = name;
+                    AppState.isHost = isHost;
+                    
+                    this.bootApp(code);
                 }
 
-                startGame(roomId) {
-                    // Ekranni o'zgartirish
-                    this.els.welcomeScreen.style.opacity = '0';
+                bootApp(roomId) {
+                    this.els.authView.style.opacity = '0';
                     setTimeout(() => {
-                        this.els.welcomeScreen.style.display = 'none';
-                        this.els.appUI.style.display = 'block';
+                        this.els.authView.style.display = 'none';
+                        this.els.uiLayer.style.display = 'block';
                         
-                        this.els.uiRoomId.innerText = roomId;
+                        this.els.roomIdStr.innerText = roomId;
                         
-                        if (state.isTeacher) {
-                            document.getElementById('btn-open-students').style.display = 'flex';
-                            document.getElementById('teacher-controls-area').style.display = 'block';
+                        if (AppState.isHost) {
+                            document.getElementById('t-users').style.display = 'flex';
+                            document.getElementById('host-controls').style.display = 'block';
+                            document.getElementById('ui-users-list').classList.add('host-mode');
                         }
-                        
-                        this.updateRoleBadge();
 
-                        // Tizimlarni ishga tushirish
-                        dbService.init(roomId);
-                        if (!canvasEngine) canvasEngine = new CanvasEngine();
-                        else canvasEngine.resize();
-                        
-                        if (!colorPicker) colorPicker = new ColorPicker();
+                        this.updateRoleInfo();
 
-                        audioManager.init();
-                        this.showToast(`Xonaga kirdingiz: ${roomId}`, "success");
+                        // Init Subsystems
+                        FirebaseEngine.connect(roomId);
+                        CanvasEngine.init();
+                        ColorEngine.init();
+                        AudioEngine.init();
 
+                        this.toast("Xonaga ulandingiz!");
                     }, 300);
                 }
 
-                // ---- UI Updates ----
+                // --- UI State Management ---
                 openSidebar(id) {
-                    this.closeAllSidebars();
-                    this.els.overlay.classList.add('active');
-                    document.getElementById(id).classList.add('active');
+                    this.closeAll();
+                    this.els.backdrop.classList.add('visible');
+                    document.getElementById(id).classList.add('open');
                     
-                    if (id === 'sidebar-chat') {
-                        state.unreadChats = 0;
-                        document.getElementById('badge-chat').style.display = 'none';
-                        this.els.chatInp.focus();
+                    if (id === 'side-chat') {
+                        AppState.unreadChats = 0;
+                        this.els.badgeChat.style.display = 'none';
+                        setTimeout(() => this.els.inpChat.focus(), 300);
                     }
                 }
 
-                closeAllSidebars() {
-                    this.els.sidebars.forEach(sb => sb.classList.remove('active'));
-                    this.els.overlay.classList.remove('active');
-                    this.hideTextModal();
+                closeAll() {
+                    this.els.sidebars.forEach(s => s.classList.remove('open'));
+                    this.els.backdrop.classList.remove('visible');
+                    this.hideTextDialog();
                 }
 
-                setTool(tool) {
-                    state.currentTool = tool;
-                    document.querySelectorAll('[data-tool]').forEach(el => el.classList.remove('active'));
-                    document.querySelector(`[data-tool="${tool}"]`).classList.add('active');
+                setTool(t) {
+                    AppState.tool = t;
+                    document.querySelectorAll('[data-action]').forEach(b => b.classList.remove('active-tool'));
+                    document.querySelector(`[data-action="${t}"]`).classList.add('active-tool');
                     
-                    const canvas = document.getElementById('main-canvas');
-                    if (tool === 'pan') canvas.style.cursor = 'grab';
-                    else if (tool === 'text') canvas.style.cursor = 'text';
-                    else canvas.style.cursor = 'crosshair';
+                    const cvs = document.getElementById('main-canvas');
+                    if (t === 'pan') cvs.style.cursor = 'grab';
+                    else if (t === 'text') cvs.style.cursor = 'text';
+                    else cvs.style.cursor = 'crosshair';
                 }
 
-                updateZoomText() {
-                    this.els.uiZoom.innerText = Math.round(state.camera.zoom * 100) + '%';
-                }
+                updateZoom() { this.els.zoomStr.innerText = Math.round(AppState.camera.zoom * 100) + '%'; }
 
-                updateRoleBadge() {
-                    if (state.isTeacher) {
-                        this.els.uiRole.innerHTML = '<i data-lucide="crown" size="14" style="color:var(--warning)"></i> O\'qituvchi';
-                    } else if (state.canDraw) {
-                        this.els.uiRole.innerHTML = '<i data-lucide="pencil" size="14" style="color:var(--accent-blue)"></i> Yozuvchi';
-                    } else {
-                        this.els.uiRole.innerHTML = '<i data-lucide="eye" size="14" style="color:var(--text-secondary)"></i> Kuzatuvchi';
-                    }
+                updateRoleInfo() {
+                    if (AppState.isHost) this.els.roleStr.innerHTML = '<i data-lucide="crown" size="16" style="color:var(--status-warning)"></i> Host';
+                    else if (AppState.canDraw) this.els.roleStr.innerHTML = '<i data-lucide="pencil" size="16" style="color:var(--accent-primary)"></i> Yozuvchi';
+                    else this.els.roleStr.innerHTML = '<i data-lucide="eye" size="16" style="color:var(--text-muted)"></i> Kuzatuvchi';
                     lucide.createIcons();
-                    this.updateMicBtnUI();
+                    this.syncMicUI();
                 }
 
-                updateMicBtnUI() {
-                    const btn = this.els.btnMic;
-                    btn.classList.remove('mic-muted', 'mic-active', 'mic-speaking');
-                    
-                    if (!state.hasSpeakPerm) {
-                        btn.classList.add('mic-muted');
-                        btn.innerHTML = '<i data-lucide="mic-off"></i>';
-                    } else if (state.isMicOn) {
-                        btn.classList.add('mic-active');
-                        btn.innerHTML = '<i data-lucide="mic"></i>';
-                    } else {
-                        btn.classList.add('mic-muted');
-                        btn.innerHTML = '<i data-lucide="mic-off"></i>';
-                    }
+                syncMicUI() {
+                    const b = this.els.micBtn;
+                    b.classList.remove('mic-off', 'mic-on', 'mic-speaking');
+                    if (!AppState.canSpeak) { b.classList.add('mic-off'); b.innerHTML = '<i data-lucide="mic-off"></i>'; }
+                    else if (AppState.micActive) { b.classList.add('mic-on'); b.innerHTML = '<i data-lucide="mic"></i>'; }
+                    else { b.classList.add('mic-off'); b.innerHTML = '<i data-lucide="mic-off"></i>'; }
                     lucide.createIcons();
                 }
 
-                setMicPulse(isSpeaking) {
-                    if (!state.hasSpeakPerm || !state.isMicOn) return;
-                    if (isSpeaking) {
-                        this.els.btnMic.classList.add('mic-speaking');
-                        this.els.btnMic.classList.remove('mic-active');
-                    } else {
-                        this.els.btnMic.classList.remove('mic-speaking');
-                        this.els.btnMic.classList.add('mic-active');
-                    }
+                pulseMic(isSpeaking) {
+                    if (!AppState.canSpeak || !AppState.micActive) return;
+                    if (isSpeaking) { this.els.micBtn.classList.add('mic-speaking'); this.els.micBtn.classList.remove('mic-on'); }
+                    else { this.els.micBtn.classList.remove('mic-speaking'); this.els.micBtn.classList.add('mic-on'); }
                 }
 
-                // ---- Modals & Uploads ----
-                showTextModal() {
-                    this.els.overlay.classList.add('active');
-                    this.els.modalText.classList.add('active');
-                    this.els.canvasTextInp.focus();
+                // --- Tools & Modals ---
+                showTextDialog() {
+                    this.els.backdrop.classList.add('visible');
+                    this.els.txtDialog.classList.add('visible');
+                    setTimeout(() => this.els.inpTxt.focus(), 100);
+                }
+                
+                hideTextDialog() {
+                    this.els.txtDialog.classList.remove('visible');
+                    this.els.inpTxt.value = '';
+                    AppState.textPos = null;
+                    if (!document.querySelector('.drawer.open')) this.els.backdrop.classList.remove('visible');
                 }
 
-                hideTextModal() {
-                    this.els.modalText.classList.remove('active');
-                    this.els.canvasTextInp.value = '';
-                    state.textDropPosition = null;
-                    if (!document.querySelector('.sidebar.active')) {
-                        this.els.overlay.classList.remove('active');
-                    }
-                }
-
-                handleImageUpload() {
-                    const input = document.createElement('input');
-                    input.type = 'file';
-                    input.accept = 'image/*';
-                    
-                    input.onchange = (e) => {
+                uploadImage() {
+                    const inp = document.createElement('input'); inp.type = 'file'; inp.accept = 'image/*';
+                    inp.onchange = e => {
                         const file = e.target.files[0];
                         if (!file) return;
-                        if (file.size > 5 * 1024 * 1024) {
-                            this.showToast("Rasm hajmi 5MB dan kichik bo'lishi shart", "error");
-                            return;
-                        }
+                        if (file.size > 5e6) return this.toast("Rasm 5MB dan kichik bo'lishi shart", "error");
 
                         const reader = new FileReader();
-                        reader.onload = (ev) => {
+                        reader.onload = ev => {
                             const img = new Image();
                             img.onload = () => {
-                                // Ekranning markazini topish
-                                const center = canvasEngine.screenToWorld(window.innerWidth / 2, window.innerHeight / 2);
-                                
-                                // O'lchamni optimallashtirish
-                                const maxWidth = 500 / state.camera.zoom;
+                                const ctr = CanvasEngine.toWorld(window.innerWidth / 2, window.innerHeight / 2);
+                                const maxW = 600 / AppState.camera.zoom;
                                 let w = img.width, h = img.height;
-                                if (w > maxWidth) {
-                                    h = (maxWidth / w) * h;
-                                    w = maxWidth;
-                                }
-
-                                dbService.saveElement({
-                                    type: 'image',
-                                    data: ev.target.result,
-                                    x: center.x - w / 2,
-                                    y: center.y - h / 2,
-                                    width: w,
-                                    height: h
+                                if (w > maxW) { h = (maxW / w) * h; w = maxW; }
+                                
+                                FirebaseEngine.pushElement({
+                                    type: 'image', data: ev.target.result,
+                                    x: ctr.x - w / 2, y: ctr.y - h / 2, width: w, height: h
                                 });
                             };
                             img.src = ev.target.result;
                         };
                         reader.readAsDataURL(file);
                     };
-                    input.click();
+                    inp.click();
                 }
 
-                // ---- Chat & Students ----
-                sendChat() {
-                    const text = this.els.chatInp.value.trim();
-                    if (!text) return;
-                    
-                    dbService.sendChatMessage(text);
-                    this.els.chatInp.value = '';
+                // --- Live Data Rendering ---
+                sendMsg() {
+                    const txt = this.els.inpChat.value.trim();
+                    if (!txt) return;
+                    FirebaseEngine.pushChat(txt);
+                    this.els.inpChat.value = '';
                 }
 
-                renderChat(msg) {
-                    const container = document.getElementById('ui-chat-messages');
+                renderMsg(m) {
+                    const feed = document.getElementById('ui-chat-feed');
+                    const isMe = m.uid === AppState.uid;
                     const div = document.createElement('div');
-                    const isMine = msg.userId === state.userId;
+                    div.className = `msg-bubble ${isMe ? 'msg-mine' : 'msg-other'}`;
                     
-                    div.className = `chat-bubble ${isMine ? 'mine' : 'others'}`;
-                    
-                    let icon = msg.isTeacher ? '<i data-lucide="crown" size="10"></i>' : '';
+                    let icon = m.isHost ? '<i data-lucide="crown" size="12"></i>' : '';
                     div.innerHTML = `
-                        <div class="chat-sender">${msg.userName} ${icon}</div>
-                        <div>${msg.text}</div>
-                        <div class="chat-time">${msg.time}</div>
+                        <div class="msg-author">${m.name} ${icon}</div>
+                        <div>${m.text}</div>
+                        <div class="msg-timestamp">${m.time}</div>
                     `;
-                    
-                    container.appendChild(div);
+                    feed.appendChild(div);
                     lucide.createIcons();
-                    container.scrollTop = container.scrollHeight;
+                    feed.scrollTop = feed.scrollHeight;
 
-                    // Unread badge logic
-                    const sidebar = document.getElementById('sidebar-chat');
-                    if (!sidebar.classList.contains('active') && !isMine) {
-                        state.unreadChats++;
-                        const badge = document.getElementById('badge-chat');
-                        badge.innerText = state.unreadChats > 9 ? '9+' : state.unreadChats;
-                        badge.style.display = 'flex';
+                    const sidebar = document.getElementById('side-chat');
+                    if (!sidebar.classList.contains('open') && !isMe) {
+                        AppState.unreadChats++;
+                        this.els.badgeChat.innerText = AppState.unreadChats > 9 ? '9+' : AppState.unreadChats;
+                        this.els.badgeChat.style.display = 'flex';
                     }
                 }
 
-                renderStudentList() {
-                    const container = document.getElementById('ui-student-list');
-                    let html = '';
-                    let count = 0;
+                renderUsers() {
+                    const list = document.getElementById('ui-users-list');
+                    let html = '', count = 0;
 
-                    Object.values(state.students).forEach(st => {
-                        if (st.isTeacher) return; // O'qituvchini ko'rsatmaymiz
+                    Object.values(AppState.peers).forEach(p => {
+                        if (p.isHost) return; 
                         count++;
-                        
-                        const drawClass = st.canDraw ? 'granted' : '';
-                        const speakClass = st.canSpeak ? 'granted' : '';
-                        const initial = st.name ? st.name.charAt(0) : '?';
-                        const isTeacherClass = state.isTeacher ? 'is-teacher' : '';
+                        const dCls = p.canDraw ? 'is-active' : '';
+                        const sCls = p.canSpeak ? 'is-active' : '';
+                        const initial = p.name ? p.name.charAt(0) : '?';
 
                         html += `
-                        <div class="student-item ${isTeacherClass}">
-                            <div class="student-info">
-                                <div class="student-avatar">${initial}</div>
-                                <span style="font-weight: 500;">${Utils.escapeHTML(st.name)}</span>
+                        <div class="user-row">
+                            <div class="user-meta">
+                                <div class="user-avatar">${initial}</div>
+                                <span style="font-weight:600;">${Core.sanitizeHTML(p.name)}</span>
                             </div>
-                            <div class="perm-controls">
-                                <button class="perm-btn ${drawClass}" data-uid="${st.id}" data-type="canDraw" title="Chizish ruxsati">
-                                    <i data-lucide="pencil" size="16"></i>
-                                </button>
-                                <button class="perm-btn ${speakClass}" data-uid="${st.id}" data-type="canSpeak" title="Mikrofon ruxsati">
-                                    <i data-lucide="mic" size="16"></i>
-                                </button>
+                            <div class="perm-toggles">
+                                <button class="toggle-btn ${dCls}" data-uid="${p.id}" data-type="canDraw"><i data-lucide="pencil" size="18"></i></button>
+                                <button class="toggle-btn ${sCls}" data-uid="${p.id}" data-type="canSpeak"><i data-lucide="mic" size="18"></i></button>
                             </div>
                         </div>`;
                     });
 
-                    if (count === 0) {
-                        html = '<div style="text-align:center; color:var(--text-secondary); margin-top:20px;">Hozircha o\'quvchilar yo\'q</div>';
-                    }
-
-                    container.innerHTML = html;
+                    if (count === 0) html = '<div style="text-align:center;color:var(--text-muted);margin-top:20px;">Hozircha o\'quvchilar yo\'q</div>';
+                    list.innerHTML = html;
                     lucide.createIcons();
 
-                    document.getElementById('badge-students').innerText = count;
-                    document.getElementById('badge-students').style.display = count > 0 ? 'flex' : 'none';
+                    this.els.badgeUsers.innerText = count;
+                    this.els.badgeUsers.style.display = count > 0 ? 'flex' : 'none';
 
-                    // O'qituvchi uchun bosish hodisalari
-                    if (state.isTeacher) {
-                        container.querySelectorAll('.perm-btn').forEach(btn => {
+                    if (AppState.isHost) {
+                        list.querySelectorAll('.toggle-btn').forEach(btn => {
                             btn.onclick = () => {
-                                const uid = btn.getAttribute('data-uid');
-                                const type = btn.getAttribute('data-type');
-                                const current = state.students[uid][type];
-                                dbService.toggleStudentPerm(uid, type, !current);
+                                const uid = btn.dataset.uid, t = btn.dataset.type;
+                                FirebaseEngine.updatePerm(uid, t, !AppState.peers[uid][t]);
                             };
                         });
                     }
                 }
 
-                // ---- Xabarnomalar ----
-                showToast(msg, type = 'success') {
-                    const container = document.getElementById('toast-container');
-                    const toast = document.createElement('div');
-                    toast.className = `toast ${type}`;
-                    
-                    let icon = type === 'success' ? 'check-circle' : 'alert-circle';
-                    toast.innerHTML = `<i data-lucide="${icon}" size="18"></i> <span>${Utils.escapeHTML(msg)}</span>`;
-                    
-                    container.appendChild(toast);
+                toast(msg, type = 'success') {
+                    const zone = document.getElementById('toast-zone');
+                    const t = document.createElement('div');
+                    t.className = `toast-msg ${type}`;
+                    t.innerHTML = `<i data-lucide="${type === 'success' ? 'check-circle' : 'alert-circle'}" size="20"></i><span>${Core.sanitizeHTML(msg)}</span>`;
+                    zone.appendChild(t);
                     lucide.createIcons();
-
                     setTimeout(() => {
-                        toast.style.animation = 'fadeOutToast 0.3s ease forwards';
-                        setTimeout(() => toast.remove(), 300);
+                        t.style.opacity = '0';
+                        t.style.transform = 'translateY(-20px)';
+                        setTimeout(() => t.remove(), 300);
                     }, 3000);
                 }
             }
-            const ui = new UIManager();
+            const UI = new UIController();
 
             // ==========================================
-            // 4. MA'LUMOTLAR BAZASI (Firebase DB)
+            // 4. FIREBASE ENGINE (Data Sync)
             // ==========================================
-            class DatabaseService {
+            class FirebaseManager {
                 constructor() {
-                    const config = {
+                    const cfg = {
                         apiKey: "AIzaSyDvbG7fChb2LN_nJhwTF1iMKMXNPcuGk5Y",
                         databaseURL: "https://tictactoe-26434-default-rtdb.firebaseio.com",
                         projectId: "tictactoe-26434"
                     };
-                    if (!firebase.apps.length) firebase.initializeApp(config);
+                    if (!firebase.apps.length) firebase.initializeApp(cfg);
                     this.db = firebase.database();
                     this.ref = null;
                 }
 
-                init(roomId) {
-                    state.roomId = roomId;
-                    this.ref = this.db.ref('mr_board_v3/' + roomId);
+                connect(roomId) {
+                    AppState.roomId = roomId;
+                    this.ref = this.db.ref(`mr_board_pro/${roomId}`);
                     
-                    // Avvalgi sessiyani tozalash va o'rnatish
-                    const myRef = this.ref.child('students/' + state.userId);
-                    myRef.onDisconnect().remove();
+                    const meRef = this.ref.child(`users/${AppState.uid}`);
+                    meRef.onDisconnect().remove();
 
-                    if (state.isTeacher) {
-                        state.canDraw = true; state.canSpeak = true; state.isMicOn = true;
-                    }
-
-                    this.updateMyPresence();
-                    this.attachListeners();
+                    if (AppState.isHost) { AppState.permDraw = true; AppState.permSpeak = true; AppState.micActive = true; }
+                    this.setPresence();
+                    this.setupListeners();
                 }
 
-                updateMyPresence() {
-                    if (!this.ref) return;
-                    this.ref.child('students/' + state.userId).set({
-                        id: state.userId,
-                        name: state.userName,
-                        isTeacher: state.isTeacher,
-                        canDraw: state.canDraw,
-                        canSpeak: state.canSpeak
+                setPresence() {
+                    this.ref.child(`users/${AppState.uid}`).set({
+                        id: AppState.uid, name: AppState.uname, isHost: AppState.isHost,
+                        canDraw: AppState.permDraw, canSpeak: AppState.permSpeak
                     });
                 }
 
-                attachListeners() {
-                    // 1. Elementlar
-                    this.ref.child('elements').on('value', snap => {
-                        const data = snap.val();
-                        state.elements = data ? Object.values(data) : [];
-                        canvasEngine.requestRender();
+                setupListeners() {
+                    // 1. Storage Elements
+                    this.ref.child('data/elements').on('value', s => {
+                        AppState.elements = s.val() ? Object.values(s.val()) : [];
+                        CanvasEngine.requestRedraw();
                     });
 
-                    // 2. Jonli Chiziqlar
-                    this.ref.child('active_paths').on('value', snap => {
-                        state.activePaths = snap.val() || {};
-                        canvasEngine.requestRender();
+                    // 2. Active Drawing
+                    this.ref.child('data/live').on('value', s => {
+                        AppState.livePaths = s.val() || {};
+                        CanvasEngine.requestRedraw();
                     });
 
-                    // 3. Kursorlar
-                    this.ref.child('cursors').on('value', snap => {
-                        state.cursors = snap.val() || {};
-                        canvasEngine.requestRender();
+                    // 3. Pointer Tracking
+                    this.ref.child('data/cursors').on('value', s => {
+                        AppState.cursors = s.val() || {};
+                        CanvasEngine.requestRedraw();
                     });
 
-                    // 4. Kamera sinxronizatsiyasi (Faqat o'quvchi o'qituvchini kuzatadi)
-                    if (!state.isTeacher) {
-                        this.ref.child('camera').on('value', snap => {
-                            const cam = snap.val();
-                            if (cam && !state.canDraw) {
-                                state.camera = cam;
-                                canvasEngine.requestRender();
-                                ui.updateZoomText();
+                    // 4. Viewport Sync (Host -> Client)
+                    if (!AppState.isHost) {
+                        this.ref.child('config/camera').on('value', s => {
+                            if (s.val() && !AppState.canDraw) {
+                                AppState.camera = s.val();
+                                CanvasEngine.requestRedraw();
+                                UI.updateZoom();
                             }
                         });
                     }
 
-                    // 5. Foydalanuvchilar va Huquqlar
-                    this.ref.child('students').on('value', snap => {
-                        state.students = snap.val() || {};
+                    // 5. User Management & Permissions
+                    this.ref.child('users').on('value', s => {
+                        AppState.peers = s.val() || {};
                         
-                        if (!state.isTeacher && state.students[state.userId]) {
-                            const me = state.students[state.userId];
-                            let changed = false;
+                        if (!AppState.isHost && AppState.peers[AppState.uid]) {
+                            const me = AppState.peers[AppState.uid];
+                            let reRender = false;
                             
-                            if (state.canDraw !== me.canDraw) { state.canDraw = me.canDraw; changed = true; }
-                            if (state.canSpeak !== me.canSpeak) {
-                                state.canSpeak = me.canSpeak;
-                                if (!state.canSpeak) { state.isMicOn = false; audioManager.updateMicPhysical(); }
-                                changed = true;
+                            if (AppState.permDraw !== me.canDraw) { AppState.permDraw = me.canDraw; reRender = true; }
+                            if (AppState.permSpeak !== me.canSpeak) {
+                                AppState.permSpeak = me.canSpeak;
+                                if (!me.canSpeak) { AppState.micActive = false; AudioEngine.applyMicState(); }
+                                reRender = true;
                             }
-                            if (changed) ui.updateRoleBadge();
+                            if (reRender) UI.updateRoleInfo();
                         }
-                        ui.renderStudentList();
+                        UI.renderUsers();
                     });
 
-                    // 6. Chat
-                    this.ref.child('chat').on('child_added', snap => {
-                        ui.renderChat(snap.val());
-                    });
+                    // 6. Chat Feed
+                    this.ref.child('chat').on('child_added', s => UI.renderMsg(s.val()));
                 }
 
-                // --- Canvas Ops ---
-                setActivePath(id, data) { this.ref.child('active_paths/' + id).set(data); }
-                updateActivePath(id, points) { this.ref.child('active_paths/' + id).update({ points }); }
-                removeActivePath(id) { this.ref.child('active_paths/' + id).remove(); }
+                // Ops
+                setLivePath(id, d) { this.ref.child(`data/live/${id}`).set(d); }
+                updateLivePath(id, p) { this.ref.child(`data/live/${id}`).update({ points: p }); }
+                delLivePath(id) { this.ref.child(`data/live/${id}`).remove(); }
                 
-                saveElement(data) {
-                    data.userId = state.userId;
-                    data.ts = Date.now();
-                    this.ref.child('elements').push(data);
+                pushElement(data) {
+                    data.uid = AppState.uid; data.ts = Date.now();
+                    this.ref.child('data/elements').push(data);
                 }
 
-                syncCursor = Utils.throttle((pos) => {
-                    if (!this.ref) return;
-                    this.ref.child('cursors/' + state.userId).set({
-                        x: pos.x, y: pos.y, name: state.userName, isTeacher: state.isTeacher
-                    });
-                }, 50);
+                syncCursor = Core.throttle((pos) => {
+                    this.ref.child(`data/cursors/${AppState.uid}`).set({ x: pos.x, y: pos.y, name: AppState.uname, isHost: AppState.isHost });
+                }, 40);
 
-                syncCamera() { if (state.isTeacher) this.ref.child('camera').set(state.camera); }
+                syncCamera() { if (AppState.isHost) this.ref.child('config/camera').set(AppState.camera); }
 
-                undoMyLast() {
-                    if (!this.ref) return;
-                    this.ref.child('elements').once('value', snap => {
-                        const data = snap.val();
-                        if (!data) return;
-                        
-                        const arr = Object.keys(data).map(k => ({ key: k, ...data[k] }));
-                        const myArr = arr.filter(i => i.userId === state.userId);
-                        
-                        if (myArr.length > 0) {
-                            myArr.sort((a, b) => a.ts - b.ts);
-                            this.ref.child('elements/' + myArr[myArr.length - 1].key).remove();
+                undo() {
+                    this.ref.child('data/elements').once('value', s => {
+                        if (!s.val()) return;
+                        const arr = Object.keys(s.val()).map(k => ({ key: k, ...s.val()[k] }));
+                        const mine = arr.filter(i => i.uid === AppState.uid);
+                        if (mine.length) {
+                            mine.sort((a, b) => a.ts - b.ts);
+                            this.ref.child(`data/elements/${mine[mine.length - 1].key}`).remove();
                         }
                     });
                 }
 
-                clearBoard() {
-                    if (confirm("Doskadagi hamma narsa o'chadi. Davom etamizmi?")) {
-                        this.ref.child('elements').remove();
-                        this.ref.child('active_paths').remove();
-                    }
-                }
-
-                // --- Teacher Ops ---
-                toggleStudentPerm(uid, perm, val) {
-                    if (state.isTeacher) this.ref.child('students/' + uid).update({ [perm]: val });
-                }
-
-                // --- Chat Ops ---
-                sendChatMessage(text) {
+                clearAll() { if (AppState.isHost) this.ref.child('data').remove(); }
+                updatePerm(uid, perm, val) { if (AppState.isHost) this.ref.child(`users/${uid}`).update({ [perm]: val }); }
+                
+                pushChat(txt) {
                     this.ref.child('chat').push({
-                        userId: state.userId,
-                        userName: state.userName,
-                        isTeacher: state.isTeacher,
-                        text: Utils.escapeHTML(text),
-                        time: Utils.formatTime()
+                        uid: AppState.uid, name: AppState.uname, isHost: AppState.isHost,
+                        text: Core.sanitizeHTML(txt), time: Core.getTimeStr()
                     });
                 }
             }
-            const dbService = new DatabaseService();
+            const FirebaseEngine = new FirebaseManager();
 
             // ==========================================
-            // 5. CANVAS ENGINE (Chizish Dvigateli)
+            // 5. CANVAS RENDERER (Optimized Graphics)
             // ==========================================
-            class CanvasEngine {
+            class Renderer {
                 constructor() {
-                    this.canvas = document.getElementById('main-canvas');
-                    this.ctx = this.canvas.getContext('2d', { alpha: false, desynchronized: true });
+                    this.cvs = document.getElementById('main-canvas');
+                    this.ctx = this.cvs.getContext('2d', { alpha: false, desynchronized: true });
                     
                     this.isDrawing = false;
-                    this.lastPoint = null;
-                    this.activePathId = null;
-                    this.needsRedraw = true;
+                    this.lastPt = null;
+                    this.activeId = null;
+                    this.dirty = true;
                     
-                    // Multi-touch va Zoom uchun state
-                    this.initialPinchDistance = null;
-                    this.initialZoom = 1;
+                    this.pinchDist = null;
+                    this.pinchZoom = 1;
+                }
 
+                init() {
                     this.resize();
                     window.addEventListener('resize', () => this.resize());
-                    this.bindEvents();
-                    
-                    this.renderLoop = this.renderLoop.bind(this);
-                    requestAnimationFrame(this.renderLoop);
+                    this.attachIO();
+                    requestAnimationFrame(() => this.loop());
                 }
 
-                resize() {
-                    this.canvas.width = window.innerWidth;
-                    this.canvas.height = window.innerHeight;
-                    this.requestRender();
-                }
+                resize() { this.cvs.width = window.innerWidth; this.cvs.height = window.innerHeight; this.requestRedraw(); }
+                requestRedraw() { this.dirty = true; }
 
-                requestRender() { this.needsRedraw = true; }
+                toWorld(x, y) { return { x: (x - AppState.camera.x) / AppState.camera.zoom, y: (y - AppState.camera.y) / AppState.camera.zoom }; }
+                toScreen(x, y) { return { x: x * AppState.camera.zoom + AppState.camera.x, y: y * AppState.camera.zoom + AppState.camera.y }; }
 
-                screenToWorld(x, y) {
-                    return {
-                        x: (x - state.camera.x) / state.camera.zoom,
-                        y: (y - state.camera.y) / state.camera.zoom
-                    };
-                }
-
-                worldToScreen(x, y) {
-                    return {
-                        x: x * state.camera.zoom + state.camera.x,
-                        y: y * state.camera.zoom + state.camera.y
-                    };
-                }
-
-                // ---- Event Handling (Touch & Mouse) ----
-                bindEvents() {
-                    // Siquv (Mouse/Trackpad)
-                    this.canvas.addEventListener('wheel', this.handleWheel.bind(this), { passive: false });
-                    
-                    // Universal Pointer Events
-                    this.canvas.addEventListener('pointerdown', this.handleDown.bind(this));
-                    window.addEventListener('pointermove', this.handleMove.bind(this));
-                    window.addEventListener('pointerup', this.handleUp.bind(this));
-                    window.addEventListener('pointercancel', this.handleUp.bind(this));
-
-                    // Multi-touch Pinch-to-zoom (Mobil)
-                    this.canvas.addEventListener('touchstart', this.handleTouchStart.bind(this), { passive: false });
-                    this.canvas.addEventListener('touchmove', this.handleTouchMove.bind(this), { passive: false });
-                    this.canvas.addEventListener('touchend', this.handleTouchEnd.bind(this));
-                }
-
-                handleWheel(e) {
-                    e.preventDefault();
-                    const worldPos = this.screenToWorld(e.clientX, e.clientY);
-                    const zoomFactor = e.deltaY > 0 ? 0.9 : 1.1;
-                    
-                    let newZoom = Math.min(Math.max(0.1, state.camera.zoom * zoomFactor), 5.0);
-                    
-                    state.camera.zoom = newZoom;
-                    state.camera.x = e.clientX - worldPos.x * state.camera.zoom;
-                    state.camera.y = e.clientY - worldPos.y * state.camera.zoom;
-                    
-                    this.requestRender();
-                    ui.updateZoomText();
-                    dbService.syncCamera();
-                }
-
-                // Mobil pinch-to-zoom
-                handleTouchStart(e) {
-                    if (e.touches.length === 2) {
+                attachIO() {
+                    this.cvs.addEventListener('wheel', e => {
                         e.preventDefault();
-                        this.isDrawing = false; // Chizishni to'xtatish
-                        const dx = e.touches[0].clientX - e.touches[1].clientX;
-                        const dy = e.touches[0].clientY - e.touches[1].clientY;
-                        this.initialPinchDistance = Math.hypot(dx, dy);
-                        this.initialZoom = state.camera.zoom;
-                    } else if (e.touches.length === 1) {
-                        // Bir barmoq bo'lsa standard pointer event ishlayveradi
-                    }
-                }
-
-                handleTouchMove(e) {
-                    if (e.touches.length === 2 && this.initialPinchDistance) {
-                        e.preventDefault();
-                        const dx = e.touches[0].clientX - e.touches[1].clientX;
-                        const dy = e.touches[0].clientY - e.touches[1].clientY;
-                        const currentDist = Math.hypot(dx, dy);
+                        const wPos = this.toWorld(e.clientX, e.clientY);
+                        const factor = e.deltaY > 0 ? 0.9 : 1.1;
+                        let nz = Math.min(Math.max(0.1, AppState.camera.zoom * factor), 5.0);
                         
-                        // O'rtadagi nuqtaga qarab zoom qilish
-                        const centerX = (e.touches[0].clientX + e.touches[1].clientX) / 2;
-                        const centerY = (e.touches[0].clientY + e.touches[1].clientY) / 2;
-                        const worldPos = this.screenToWorld(centerX, centerY);
+                        AppState.camera.zoom = nz;
+                        AppState.camera.x = e.clientX - wPos.x * nz;
+                        AppState.camera.y = e.clientY - wPos.y * nz;
+                        
+                        this.requestRedraw(); UI.updateZoom(); FirebaseEngine.syncCamera();
+                    }, { passive: false });
 
-                        let newZoom = this.initialZoom * (currentDist / this.initialPinchDistance);
-                        newZoom = Math.min(Math.max(0.1, newZoom), 5.0);
+                    this.cvs.addEventListener('pointerdown', e => {
+                        if (!e.isPrimary) return;
+                        const wPos = this.toWorld(e.clientX, e.clientY);
 
-                        state.camera.zoom = newZoom;
-                        state.camera.x = centerX - worldPos.x * state.camera.zoom;
-                        state.camera.y = centerY - worldPos.y * state.camera.zoom;
-
-                        this.requestRender();
-                        ui.updateZoomText();
-                        dbService.syncCamera();
-                    }
-                }
-
-                handleTouchEnd(e) {
-                    if (e.touches.length < 2) {
-                        this.initialPinchDistance = null;
-                    }
-                }
-
-                // Oddiy Pointer Logikasi
-                handleDown(e) {
-                    // Agar ikkinchi barmoq bosilsa yoki pointer type noto'g'ri bo'lsa o'tkazib yuboramiz
-                    if (!e.isPrimary) return; 
-
-                    const x = e.clientX, y = e.clientY;
-                    const worldPos = this.screenToWorld(x, y);
-
-                    // Text Tool
-                    if (state.currentTool === 'text') {
-                        if (state.hasDrawPerm) {
-                            state.textDropPosition = worldPos;
-                            ui.showTextModal();
-                        } else {
-                            ui.showToast("Sizda yozish huquqi yo'q", "error");
+                        if (AppState.tool === 'text') {
+                            if (AppState.canDraw) { AppState.textPos = wPos; UI.showTextDialog(); }
+                            else UI.toast("Ruxsat yo'q", "error");
+                            return;
                         }
-                        return;
-                    }
 
-                    this.isDrawing = true;
-                    this.lastPoint = { x, y };
+                        this.isDrawing = true; this.lastPt = { x: e.clientX, y: e.clientY };
 
-                    if (!state.hasDrawPerm && state.currentTool !== 'pan') {
+                        if (!AppState.canDraw && AppState.tool !== 'pan') { this.isDrawing = false; return; }
+
+                        if (AppState.tool === 'draw' || AppState.tool === 'erase') {
+                            this.activeId = AppState.uid + '_' + Date.now();
+                            const c = AppState.tool === 'erase' ? '#000000' : AppState.color;
+                            const s = (AppState.tool === 'erase' ? 50 : AppState.size) / AppState.camera.zoom;
+                            FirebaseEngine.setLivePath(this.activeId, { uid: AppState.uid, points: [wPos], color: c, size: s });
+                        }
+                    });
+
+                    window.addEventListener('pointermove', e => {
+                        if (!e.isPrimary) return;
+                        const wPos = this.toWorld(e.clientX, e.clientY);
+                        FirebaseEngine.syncCursor(wPos);
+
+                        if (!this.isDrawing) return;
+
+                        if (AppState.tool === 'pan') {
+                            AppState.camera.x += e.clientX - this.lastPt.x;
+                            AppState.camera.y += e.clientY - this.lastPt.y;
+                            this.lastPt = { x: e.clientX, y: e.clientY };
+                            this.requestRedraw(); return;
+                        }
+
+                        if (AppState.canDraw && (AppState.tool === 'draw' || AppState.tool === 'erase')) {
+                            const path = AppState.livePaths[this.activeId];
+                            if (path && path.points) {
+                                const lW = path.points[path.points.length - 1];
+                                if (Math.hypot(wPos.x - lW.x, wPos.y - lW.y) > 3 / AppState.camera.zoom) {
+                                    path.points.push(wPos);
+                                    FirebaseEngine.updateLivePath(this.activeId, path.points);
+                                }
+                            }
+                        }
+                        this.lastPt = { x: e.clientX, y: e.clientY };
+                    });
+
+                    window.addEventListener('pointerup', e => {
+                        if (!e.isPrimary || !this.isDrawing) return;
                         this.isDrawing = false;
-                        return;
-                    }
-
-                    if (state.currentTool === 'draw' || state.currentTool === 'erase') {
-                        this.activePathId = state.userId + '_' + Date.now();
-                        const color = state.currentTool === 'erase' ? '#09090b' : state.currentColor;
-                        const size = (state.currentTool === 'erase' ? 40 : state.penSize) / state.camera.zoom;
                         
-                        dbService.setActivePath(this.activePathId, {
-                            userId: state.userId,
-                            points: [worldPos],
-                            color: color,
-                            size: size
-                        });
-                    }
-                }
-
-                handleMove(e) {
-                    if (!e.isPrimary) return;
-                    const x = e.clientX, y = e.clientY;
-                    const worldPos = this.screenToWorld(x, y);
-
-                    // Faqat kerakli tezlikda kursor uzatamiz
-                    dbService.syncCursor(worldPos);
-
-                    if (!this.isDrawing) return;
-
-                    // Pan (Surish)
-                    if (state.currentTool === 'pan') {
-                        state.camera.x += x - this.lastPoint.x;
-                        state.camera.y += y - this.lastPoint.y;
-                        this.lastPoint = { x, y };
-                        this.requestRender();
-                        return;
-                    }
-
-                    // Draw / Erase
-                    if (state.hasDrawPerm && (state.currentTool === 'draw' || state.currentTool === 'erase')) {
-                        const path = state.activePaths[this.activePathId];
-                        if (path && path.points) {
-                            const lastW = path.points[path.points.length - 1];
-                            const dist = Math.hypot(worldPos.x - lastW.x, worldPos.y - lastW.y);
-                            
-                            // Nuqtalarni tejash (Performans)
-                            if (dist > 3 / state.camera.zoom) {
-                                path.points.push(worldPos);
-                                dbService.updateActivePath(this.activePathId, path.points);
+                        if (AppState.canDraw && (AppState.tool === 'draw' || AppState.tool === 'erase') && this.activeId) {
+                            const path = AppState.livePaths[this.activeId];
+                            if (path && path.points && path.points.length > 1) {
+                                FirebaseEngine.pushElement({ type: 'path', points: path.points, color: path.color, size: path.size });
                             }
+                            FirebaseEngine.delLivePath(this.activeId);
+                            this.activeId = null;
                         }
-                    }
-                    this.lastPoint = { x, y };
+                    });
+
+                    // Mobile Pinch-to-zoom
+                    this.cvs.addEventListener('touchstart', e => {
+                        if(e.touches.length === 2) {
+                            e.preventDefault(); this.isDrawing = false;
+                            this.pinchDist = Math.hypot(e.touches[0].clientX - e.touches[1].clientX, e.touches[0].clientY - e.touches[1].clientY);
+                            this.pinchZoom = AppState.camera.zoom;
+                        }
+                    }, {passive:false});
+                    this.cvs.addEventListener('touchmove', e => {
+                        if(e.touches.length === 2 && this.pinchDist) {
+                            e.preventDefault();
+                            const cd = Math.hypot(e.touches[0].clientX - e.touches[1].clientX, e.touches[0].clientY - e.touches[1].clientY);
+                            const cx = (e.touches[0].clientX + e.touches[1].clientX)/2, cy = (e.touches[0].clientY + e.touches[1].clientY)/2;
+                            const wPos = this.toWorld(cx, cy);
+                            
+                            let nz = Math.min(Math.max(0.1, this.pinchZoom * (cd / this.pinchDist)), 5.0);
+                            AppState.camera.zoom = nz;
+                            AppState.camera.x = cx - wPos.x * nz;
+                            AppState.camera.y = cy - wPos.y * nz;
+                            this.requestRedraw(); UI.updateZoom(); FirebaseEngine.syncCamera();
+                        }
+                    }, {passive:false});
+                    this.cvs.addEventListener('touchend', e => { if(e.touches.length < 2) this.pinchDist = null; });
                 }
 
-                handleUp(e) {
-                    if (!e.isPrimary || !this.isDrawing) return;
-                    this.isDrawing = false;
-
-                    if (state.hasDrawPerm && (state.currentTool === 'draw' || state.currentTool === 'erase')) {
-                        const path = state.activePaths[this.activePathId];
-                        if (path && path.points && path.points.length > 1) {
-                            dbService.saveElement({
-                                type: 'path',
-                                points: path.points,
-                                color: path.color,
-                                size: path.size
-                            });
-                        }
-                        if (this.activePathId) {
-                            dbService.removeActivePath(this.activePathId);
-                            this.activePathId = null;
-                        }
+                drawSpline(pts, c, s) {
+                    if (!pts || pts.length < 2) return;
+                    this.ctx.beginPath(); this.ctx.strokeStyle = c; this.ctx.lineWidth = s;
+                    this.ctx.lineCap = 'round'; this.ctx.lineJoin = 'round';
+                    this.ctx.moveTo(pts[0].x, pts[0].y);
+                    for (let i = 1; i < pts.length - 1; i++) {
+                        const xc = (pts[i].x + pts[i+1].x) / 2, yc = (pts[i].y + pts[i+1].y) / 2;
+                        this.ctx.quadraticCurveTo(pts[i].x, pts[i].y, xc, yc);
                     }
-                }
-
-                // ---- Rendering ----
-                
-                // Silliqroq chizish uchun Quadratic Bezier ishlatamiz
-                drawSmoothPath(points, color, size) {
-                    if (!points || points.length < 2) return;
-                    this.ctx.beginPath();
-                    this.ctx.strokeStyle = color;
-                    this.ctx.lineWidth = size;
-                    this.ctx.lineCap = 'round';
-                    this.ctx.lineJoin = 'round';
-                    
-                    this.ctx.moveTo(points[0].x, points[0].y);
-                    
-                    for (let i = 1; i < points.length - 1; i++) {
-                        const xc = (points[i].x + points[i + 1].x) / 2;
-                        const yc = (points[i].y + points[i + 1].y) / 2;
-                        this.ctx.quadraticCurveTo(points[i].x, points[i].y, xc, yc);
-                    }
-                    // Oxirgi nuqta
-                    this.ctx.lineTo(points[points.length - 1].x, points[points.length - 1].y);
+                    this.ctx.lineTo(pts[pts.length-1].x, pts[pts.length-1].y);
                     this.ctx.stroke();
                 }
 
-                drawGrid() {
-                    this.ctx.strokeStyle = '#18181b'; // Juda qora fon uchun xira setka
-                    this.ctx.lineWidth = 1;
-                    const gs = 50 * state.camera.zoom;
-                    if (gs < 15) return; // Uzoqlashganda setka chizilmaydi
+                drawBg() {
+                    this.ctx.strokeStyle = '#1a1a1a'; this.ctx.lineWidth = 1;
+                    const gs = 60 * AppState.camera.zoom;
+                    if (gs < 20) return;
                     
-                    const ox = state.camera.x % gs;
-                    const oy = state.camera.y % gs;
-                    
+                    const ox = AppState.camera.x % gs, oy = AppState.camera.y % gs;
                     this.ctx.beginPath();
-                    for (let x = ox; x < this.canvas.width; x += gs) {
-                        this.ctx.moveTo(x, 0); this.ctx.lineTo(x, this.canvas.height);
-                    }
-                    for (let y = oy; y < this.canvas.height; y += gs) {
-                        this.ctx.moveTo(0, y); this.ctx.lineTo(this.canvas.width, y);
-                    }
+                    for (let x = ox; x < this.cvs.width; x += gs) { this.ctx.moveTo(x, 0); this.ctx.lineTo(x, this.cvs.height); }
+                    for (let y = oy; y < this.cvs.height; y += gs) { this.ctx.moveTo(0, y); this.ctx.lineTo(this.cvs.width, y); }
                     this.ctx.stroke();
                 }
 
-                renderLoop() {
-                    if (this.needsRedraw) {
-                        // Tozalash
+                loop() {
+                    if (this.dirty) {
                         this.ctx.setTransform(1, 0, 0, 1, 0, 0);
-                        this.ctx.fillStyle = '#09090b';
-                        this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+                        this.ctx.fillStyle = '#000000';
+                        this.ctx.fillRect(0, 0, this.cvs.width, this.cvs.height);
+                        this.drawBg();
                         
-                        this.drawGrid();
+                        this.ctx.setTransform(AppState.camera.zoom, 0, 0, AppState.camera.zoom, AppState.camera.x, AppState.camera.y);
                         
-                        // Kameraga o'tish
-                        this.ctx.setTransform(state.camera.zoom, 0, 0, state.camera.zoom, state.camera.x, state.camera.y);
-                        
-                        // 1. Doimiy Elementlar
-                        state.elements.forEach(el => {
-                            if (el.type === 'path') {
-                                this.drawSmoothPath(el.points, el.color, el.size);
-                            } else if (el.type === 'text') {
-                                this.ctx.font = `600 ${el.size}px -apple-system, sans-serif`;
-                                this.ctx.fillStyle = el.color;
-                                this.ctx.fillText(el.text, el.x, el.y);
+                        AppState.elements.forEach(el => {
+                            if (el.type === 'path') this.drawSpline(el.points, el.color, el.size);
+                            else if (el.type === 'text') {
+                                this.ctx.font = `600 ${el.size}px Inter, sans-serif`;
+                                this.ctx.fillStyle = el.color; this.ctx.fillText(el.text, el.x, el.y);
                             } else if (el.type === 'image' && el.data) {
-                                if (!el.imgObj) {
-                                    el.imgObj = new Image();
-                                    el.imgObj.src = el.data;
-                                    el.imgObj.onload = () => this.requestRender();
-                                }
-                                if (el.imgObj.complete) {
-                                    this.ctx.drawImage(el.imgObj, el.x, el.y, el.width, el.height);
-                                }
+                                if (!el._img) { el._img = new Image(); el._img.src = el.data; el._img.onload = () => this.requestRedraw(); }
+                                if (el._img.complete) this.ctx.drawImage(el._img, el.x, el.y, el.width, el.height);
                             }
                         });
                         
-                        // 2. Jonli Chiziqlar
-                        Object.values(state.activePaths).forEach(p => {
-                            if (p && p.points) this.drawSmoothPath(p.points, p.color, p.size);
-                        });
+                        Object.values(AppState.livePaths).forEach(p => { if (p && p.points) this.drawSpline(p.points, p.color, p.size); });
                         
-                        // 3. Kursorlar (Ekranda chizish yaxshi, zoomga bo'ysunmaydi)
                         this.ctx.setTransform(1, 0, 0, 1, 0, 0);
-                        Object.values(state.cursors).forEach(c => {
-                            if (c.name === state.userName || typeof c.x !== 'number') return;
-                            const sp = this.worldToScreen(c.x, c.y);
+                        Object.values(AppState.cursors).forEach(c => {
+                            if (c.name === AppState.uname || typeof c.x !== 'number') return;
+                            const sp = this.toScreen(c.x, c.y);
                             
-                            this.ctx.beginPath();
-                            this.ctx.arc(sp.x, sp.y, 5, 0, Math.PI * 2);
-                            this.ctx.fillStyle = c.isTeacher ? '#f59e0b' : '#ef4444';
-                            this.ctx.fill();
-                            this.ctx.lineWidth = 2;
-                            this.ctx.strokeStyle = '#ffffff';
-                            this.ctx.stroke();
+                            this.ctx.beginPath(); this.ctx.arc(sp.x, sp.y, 6, 0, Math.PI * 2);
+                            this.ctx.fillStyle = c.isHost ? '#f59e0b' : '#ef4444'; this.ctx.fill();
+                            this.ctx.lineWidth = 2; this.ctx.strokeStyle = '#fff'; this.ctx.stroke();
 
-                            this.ctx.font = '12px sans-serif';
-                            this.ctx.fillStyle = 'rgba(255, 255, 255, 0.9)';
-                            this.ctx.fillText(c.name, sp.x + 10, sp.y + 4);
+                            this.ctx.font = '600 12px Inter, sans-serif'; this.ctx.fillStyle = '#fff';
+                            this.ctx.fillText(c.name, sp.x + 12, sp.y + 5);
                         });
-
-                        this.needsRedraw = false;
+                        this.dirty = false;
                     }
-                    requestAnimationFrame(this.renderLoop);
+                    requestAnimationFrame(() => this.loop());
                 }
             }
-            let canvasEngine;
+            const CanvasEngine = new Renderer();
 
             // ==========================================
-            // 6. AUDIO ENGINE (WebRTC & 1:1 Sifat)
+            // 6. WEBRTC AUDIO MESH NETWORK
             // ==========================================
-            class AudioManager {
+            class VoiceNetwork {
                 constructor() {
-                    this.stream = null;
-                    this.peers = {};
-                    this.audioCtx = null;
-                    this.analyser = null;
-                    this.dataArr = null;
-                    this.isSpeaking = false;
-                    this.speakTimer = null;
-                    
-                    // WebRTC ICE Serverlar
-                    this.rtcConfig = {
-                        iceServers: [
-                            { urls: 'stun:stun.l.google.com:19302' },
-                            { urls: 'stun:stun1.l.google.com:19302' }
-                        ]
-                    };
+                    this.stream = null; this.rtcPeers = {}; this.aCtx = null; this.analyser = null; this.data = null;
+                    this.cfg = { iceServers: [{ urls: 'stun:stun.l.google.com:19302' }, { urls: 'stun:stun1.l.google.com:19302' }] };
                 }
 
                 async init() {
                     try {
-                        // MUHIM: 1:1 Ovoz sifati uchun agressiv filtarlarni o'chirish
-                        // EchoCancellation - Karnay va mikrafon birga ishlaganda aks sado bermaslik uchun yoniq bo'lishi shart!
-                        // Qolgan "sun'iy tozalash"lar o'chiriladi.
-                        this.stream = await navigator.mediaDevices.getUserMedia({ 
-                            audio: {
-                                echoCancellation: true,  
-                                noiseSuppression: false, 
-                                autoGainControl: false,  
-                                sampleRate: 48000,
-                                channelCount: 1
-                            } 
+                        this.stream = await navigator.mediaDevices.getUserMedia({
+                            audio: { echoCancellation: true, noiseSuppression: false, autoGainControl: false }
                         });
-                        
-                        this.updateMicPhysical();
-                        this.setupVisualizer();
-                        this.listenSignals();
-                        console.log("[Audio] Muvaffaqiyatli ishga tushdi");
-                    } catch (e) {
-                        console.error("[Audio Error]", e);
-                        ui.showToast("Mikrofonga ruxsat bermadingiz", "error");
-                    }
+                        this.applyMicState();
+                        this.setupViz();
+                        this.startSignaling();
+                    } catch (e) { console.error("Mic Err:", e); UI.toast("Mikrofon ulashda xatolik", "error"); }
                 }
 
-                toggleMic() {
-                    if (!state.hasSpeakPerm) {
-                        ui.showToast("Sizda mikrofon huquqi yo'q", "error");
-                        return;
-                    }
-                    state.isMicOn = !state.isMicOn;
-                    this.updateMicPhysical();
-                    ui.updateMicBtnUI();
+                toggle() {
+                    if (!AppState.canSpeak) return UI.toast("Huquq yo'q", "error");
+                    AppState.micActive = !AppState.micActive;
+                    this.applyMicState(); UI.syncMicUI();
                 }
 
-                updateMicPhysical() {
+                applyMicState() {
                     if (this.stream) {
-                        const track = this.stream.getAudioTracks()[0];
-                        if (track) {
-                            track.enabled = state.hasSpeakPerm && state.isMicOn;
-                        }
+                        const t = this.stream.getAudioTracks()[0];
+                        if (t) t.enabled = AppState.canSpeak && AppState.micActive;
                     }
                 }
 
-                // ---- Vizualizator ----
-                setupVisualizer() {
-                    const Ctx = window.AudioContext || window.webkitAudioContext;
-                    this.audioCtx = new Ctx();
-                    this.analyser = this.audioCtx.createAnalyser();
-                    
-                    const source = this.audioCtx.createMediaStreamSource(this.stream);
-                    source.connect(this.analyser);
-                    
+                setupViz() {
+                    this.aCtx = new (window.AudioContext || window.webkitAudioContext)();
+                    this.analyser = this.aCtx.createAnalyser();
+                    this.aCtx.createMediaStreamSource(this.stream).connect(this.analyser);
                     this.analyser.fftSize = 256;
-                    this.dataArr = new Uint8Array(this.analyser.frequencyBinCount);
-                    
-                    this.animateWave();
+                    this.data = new Uint8Array(this.analyser.frequencyBinCount);
+                    this.drawViz();
                 }
 
-                animateWave = () => {
-                    requestAnimationFrame(this.animateWave);
-                    
-                    const bars = document.querySelectorAll('.audio-bar');
-                    const text = ui.els.uiDbLevel;
-                    
-                    if (!(state.hasSpeakPerm && state.isMicOn)) {
-                        bars.forEach(b => b.style.height = '4px');
-                        if (text) text.innerText = 'Muted';
-                        return;
+                drawViz = () => {
+                    requestAnimationFrame(this.drawViz);
+                    const bars = document.querySelectorAll('.w-bar'), txt = document.getElementById('audio-db');
+                    if (!(AppState.canSpeak && AppState.micActive)) {
+                        bars.forEach(b => b.style.height = '4px'); if(txt) txt.innerText = 'OFF';
+                        UI.pulseMic(false); return;
                     }
-
-                    this.analyser.getByteFrequencyData(this.dataArr);
-                    let sum = 0;
-                    for (let i = 0; i < this.dataArr.length; i++) sum += this.dataArr[i];
-                    let avg = sum / this.dataArr.length;
                     
-                    // DB hisoblash
-                    let db = Math.round(20 * Math.log10(avg / 255 + 0.1));
+                    this.analyser.getByteFrequencyData(this.data);
+                    let sum = 0; for(let i=0; i<this.data.length; i++) sum += this.data[i];
+                    let avg = sum / this.data.length;
+                    
+                    let db = Math.round(20 * Math.log10(avg/255 + 0.1));
                     db = Math.max(-60, Math.min(0, db));
-                    if (text) text.innerText = avg < 5 ? '-∞ dB' : `${db} dB`;
-
-                    // Yashil yozish effekti
-                    const isSpeaking = avg > 20;
-                    if (isSpeaking !== this.isSpeaking) {
-                        this.isSpeaking = isSpeaking;
-                        clearTimeout(this.speakTimer);
-                        
-                        if (isSpeaking) {
-                            ui.setMicPulse(true);
-                        } else {
-                            this.speakTimer = setTimeout(() => {
-                                if (!this.isSpeaking) ui.setMicPulse(false);
-                            }, 300);
-                        }
-                    }
-
-                    // Chiziqlarni o'ynatish
+                    if(txt) txt.innerText = avg < 5 ? '-∞ dB' : `${db} dB`;
+                    
+                    UI.pulseMic(avg > 15);
+                    
                     const norm = Math.min(1, avg / 120);
-                    bars.forEach((bar, i) => {
-                        const factor = Math.sin((i / bars.length) * Math.PI);
-                        let h = 4 + (norm * 24 * factor);
-                        bar.style.height = `${Math.max(4, Math.min(24, h))}px`;
+                    bars.forEach((b, i) => {
+                        const f = Math.sin((i/bars.length) * Math.PI);
+                        b.style.height = `${Math.max(4, 4 + (norm * 20 * f))}px`;
                     });
                 }
 
-                // ---- Signaling (WebRTC) ----
-                listenSignals() {
-                    const sigRef = dbService.ref.child('signals/' + state.userId);
-                    sigRef.on('child_added', async (snap) => {
-                        const data = snap.val();
-                        snap.ref.remove(); 
-                        
+                startSignaling() {
+                    const sig = FirebaseEngine.ref.child(`signals/${AppState.uid}`);
+                    sig.on('child_added', async s => {
+                        const d = s.val(); s.ref.remove();
                         try {
-                            if (data.type === 'offer') await this.handleOffer(data.from, data.sdp);
-                            else if (data.type === 'answer') await this.handleAnswer(data.from, data.sdp);
-                            else if (data.type === 'ice') await this.handleIce(data.from, data.ice);
-                        } catch (e) { console.error("[RTC Error]", e); }
+                            if (d.type === 'offer') await this.handleOffer(d.from, d.sdp);
+                            else if (d.type === 'answer') await this.handleAnswer(d.from, d.sdp);
+                            else if (d.type === 'ice') await this.handleIce(d.from, d.ice);
+                        } catch (e) {}
                     });
 
-                    // Yangi odam kirsa qo'ng'iroq qilish
-                    dbService.ref.child('students').on('child_added', snap => {
-                        const uid = snap.key;
-                        if (uid !== state.userId) setTimeout(() => this.callUser(uid), 1500);
+                    // Mesh Logic: Qachonki yangi a'zo kirsa, ulanamiz
+                    FirebaseEngine.ref.child('users').on('child_added', s => {
+                        const uid = s.key;
+                        if (uid !== AppState.uid) setTimeout(() => this.call(uid), 2000);
+                    });
+                    
+                    // Chiqib ketsa, peer ni o'chiramiz
+                    FirebaseEngine.ref.child('users').on('child_removed', s => {
+                        const uid = s.key;
+                        if(this.rtcPeers[uid]) { this.rtcPeers[uid].close(); delete this.rtcPeers[uid]; }
+                        const a = document.getElementById(`audio_${uid}`);
+                        if(a) a.remove();
                     });
                 }
 
-                createPeer(peerId) {
-                    const pc = new RTCPeerConnection(this.rtcConfig);
+                createPC(uid) {
+                    const pc = new RTCPeerConnection(this.cfg);
+                    if (this.stream) this.stream.getTracks().forEach(t => pc.addTrack(t, this.stream));
                     
-                    if (this.stream) {
-                        this.stream.getTracks().forEach(t => pc.addTrack(t, this.stream));
-                    }
-                    
-                    pc.onicecandidate = (e) => {
-                        if (e.candidate) this.sendSignal(peerId, { type: 'ice', ice: JSON.stringify(e.candidate) });
-                    };
-                    
-                    pc.ontrack = (e) => {
-                        const audioId = 'audio_' + peerId;
-                        let audioEl = document.getElementById(audioId);
-                        
-                        if (!audioEl) {
-                            audioEl = document.createElement('audio');
-                            audioEl.id = audioId;
-                            audioEl.autoplay = true;
-                            document.getElementById('hidden-audio-container').appendChild(audioEl);
-                        }
-                        
-                        // Faqat yangi stream bo'lsa ulash (Uzilishlarni oldini oladi)
-                        if (audioEl.srcObject !== e.streams[0]) {
-                            audioEl.srcObject = e.streams[0];
-                            audioEl.play().catch(() => {
-                                document.body.addEventListener('click', () => audioEl.play(), { once: true });
-                            });
+                    pc.onicecandidate = e => { if (e.candidate) FirebaseEngine.ref.child(`signals/${uid}`).push({ from: AppState.uid, type: 'ice', ice: JSON.stringify(e.candidate) }); };
+                    pc.ontrack = e => {
+                        let a = document.getElementById(`audio_${uid}`);
+                        if (!a) { a = document.createElement('audio'); a.id = `audio_${uid}`; a.autoplay = true; document.getElementById('rtc-audio-pool').appendChild(a); }
+                        if (a.srcObject !== e.streams[0]) {
+                            a.srcObject = e.streams[0];
+                            a.play().catch(() => document.body.addEventListener('click', () => a.play(), {once:true}));
                         }
                     };
-
-                    this.peers[peerId] = pc;
+                    this.rtcPeers[uid] = pc;
                     return pc;
                 }
 
-                async callUser(uid) {
-                    if (this.peers[uid]) return; 
-                    const pc = this.createPeer(uid);
-                    const offer = await pc.createOffer();
-                    await pc.setLocalDescription(offer);
-                    this.sendSignal(uid, { type: 'offer', sdp: JSON.stringify(offer) });
+                async call(uid) {
+                    if (this.rtcPeers[uid]) return;
+                    const pc = this.createPC(uid);
+                    const offer = await pc.createOffer(); await pc.setLocalDescription(offer);
+                    FirebaseEngine.ref.child(`signals/${uid}`).push({ from: AppState.uid, type: 'offer', sdp: JSON.stringify(offer) });
                 }
 
-                async handleOffer(uid, sdpStr) {
-                    const pc = this.createPeer(uid);
-                    await pc.setRemoteDescription(new RTCSessionDescription(JSON.parse(sdpStr)));
-                    const answer = await pc.createAnswer();
-                    await pc.setLocalDescription(answer);
-                    this.sendSignal(uid, { type: 'answer', sdp: JSON.stringify(answer) });
+                async handleOffer(uid, sdp) {
+                    const pc = this.createPC(uid);
+                    await pc.setRemoteDescription(new RTCSessionDescription(JSON.parse(sdp)));
+                    const answer = await pc.createAnswer(); await pc.setLocalDescription(answer);
+                    FirebaseEngine.ref.child(`signals/${uid}`).push({ from: AppState.uid, type: 'answer', sdp: JSON.stringify(answer) });
                 }
 
-                async handleAnswer(uid, sdpStr) {
-                    const pc = this.peers[uid];
-                    if (pc) await pc.setRemoteDescription(new RTCSessionDescription(JSON.parse(sdpStr)));
-                }
-
-                async handleIce(uid, iceStr) {
-                    const pc = this.peers[uid];
-                    if (pc) await pc.addIceCandidate(new RTCIceCandidate(JSON.parse(iceStr)));
-                }
-
-                sendSignal(to, data) {
-                    dbService.ref.child('signals/' + to).push({ from: state.userId, ...data });
-                }
+                async handleAnswer(uid, sdp) { if (this.rtcPeers[uid]) await this.rtcPeers[uid].setRemoteDescription(new RTCSessionDescription(JSON.parse(sdp))); }
+                async handleIce(uid, ice) { if (this.rtcPeers[uid]) await this.rtcPeers[uid].addIceCandidate(new RTCIceCandidate(JSON.parse(ice))); }
             }
-            const audioManager = new AudioManager();
+            const AudioEngine = new VoiceNetwork();
 
             // ==========================================
-            // 7. COLOR PICKER (Rang Tanlagich)
+            // 7. COLOR ENGINE (Custom Color Wheel)
             // ==========================================
-            class ColorPicker {
+            class ColorManager {
                 constructor() {
-                    this.canvas = document.getElementById('colorWheel');
-                    this.ctx = this.canvas.getContext('2d');
-                    this.hue = 0.6; // Boshlang'ich (Blue)
-                    this.sat = 0.8;
-                    this.val = 1.0;
-                    
-                    this.initEvents();
-                    this.drawWheel();
-                    this.setupQuickColors();
+                    this.cvs = document.getElementById('color-canvas');
+                    this.ctx = this.cvs.getContext('2d');
+                    this.h = 0.6; this.s = 0.8; this.v = 1.0;
                 }
 
-                initEvents() {
-                    // Wheel interactions
-                    const interact = (e) => {
-                        const rect = this.canvas.getBoundingClientRect();
-                        const x = (e.clientX || (e.touches && e.touches[0].clientX)) - rect.left;
-                        const y = (e.clientY || (e.touches && e.touches[0].clientY)) - rect.top;
+                init() {
+                    this.draw(); this.buildPalette();
+                    const move = e => {
+                        if (e.buttons === 0 && e.type !== 'pointerdown') return;
+                        const r = this.cvs.getBoundingClientRect();
+                        const x = (e.clientX || (e.touches && e.touches[0].clientX)) - r.left;
+                        const y = (e.clientY || (e.touches && e.touches[0].clientY)) - r.top;
+                        const cx = this.cvs.width/2, cy = this.cvs.height/2, rad = this.cvs.width/2;
                         
-                        const cx = this.canvas.width / 2;
-                        const cy = this.canvas.height / 2;
-                        const r = this.canvas.width / 2;
-                        
-                        const dx = x - cx, dy = y - cy;
-                        const dist = Math.hypot(dx, dy);
-                        
-                        if (dist <= r) {
-                            let angle = Math.atan2(dy, dx);
-                            this.hue = (angle + Math.PI) / (2 * Math.PI);
-                            this.sat = dist / r;
-                            this.updateColor();
+                        const dist = Math.hypot(x-cx, y-cy);
+                        if (dist <= rad) {
+                            this.h = (Math.atan2(y-cy, x-cx) + Math.PI) / (2 * Math.PI);
+                            this.s = dist / rad;
+                            this.apply();
                         }
                     };
-
-                    this.canvas.addEventListener('pointerdown', interact);
-                    this.canvas.addEventListener('pointermove', (e) => { if (e.buttons > 0) interact(e); });
-
-                    // Brightness slider
-                    document.getElementById('input-brightness').oninput = (e) => {
-                        this.val = parseInt(e.target.value) / 100;
-                        this.updateColor();
-                    };
+                    this.cvs.addEventListener('pointerdown', move);
+                    this.cvs.addEventListener('pointermove', move);
+                    document.getElementById('inp-bright').oninput = e => { this.v = parseInt(e.target.value)/100; this.apply(); };
                 }
 
-                drawWheel() {
-                    const w = this.canvas.width, h = this.canvas.height;
-                    const cx = w / 2, cy = h / 2, r = w / 2;
-                    const img = this.ctx.createImageData(w, h);
-                    const d = img.data;
-
+                draw() {
+                    const w = this.cvs.width, h = this.cvs.height, cx = w/2, cy = h/2, r = w/2;
+                    const img = this.ctx.createImageData(w, h), d = img.data;
                     for (let y = 0; y < h; y++) {
                         for (let x = 0; x < w; x++) {
-                            const dx = x - cx, dy = y - cy;
-                            const dist = Math.hypot(dx, dy);
+                            const dist = Math.hypot(x-cx, y-cy);
                             if (dist <= r) {
-                                let angle = Math.atan2(dy, dx);
-                                let hue = (angle + Math.PI) / (2 * Math.PI);
-                                let sat = dist / r;
-                                
-                                const rgb = this.hsv2rgb(hue, sat, 1);
-                                const i = (y * w + x) * 4;
-                                d[i] = rgb.r; d[i+1] = rgb.g; d[i+2] = rgb.b; d[i+3] = 255;
+                                const rgb = this.hsv2rgb((Math.atan2(y-cy, x-cx) + Math.PI) / (2 * Math.PI), dist/r, 1);
+                                const i = (y*w+x)*4; d[i]=rgb.r; d[i+1]=rgb.g; d[i+2]=rgb.b; d[i+3]=255;
                             }
                         }
                     }
                     this.ctx.putImageData(img, 0, 0);
                 }
 
-                updateColor() {
-                    const rgb = this.hsv2rgb(this.hue, this.sat, this.val);
-                    const hex = this.rgb2hex(rgb.r, rgb.g, rgb.b);
-                    state.currentColor = hex;
-                    
+                apply() {
+                    const rgb = this.hsv2rgb(this.h, this.s, this.v);
+                    const hex = "#" + ((1<<24)+(rgb.r<<16)+(rgb.g<<8)+rgb.b).toString(16).slice(1);
+                    AppState.color = hex;
                     document.getElementById('ui-color-preview').style.backgroundColor = hex;
-                    document.getElementById('ui-current-color').style.backgroundColor = hex;
-                    ui.setTool('draw'); // Avtomatik qalamga o'tish
+                    document.getElementById('ui-color-dot').style.backgroundColor = hex;
+                    UI.setTool('draw');
                 }
 
-                setupQuickColors() {
-                    const colors = ['#ffffff', '#a1a1aa', '#ef4444', '#f97316', '#f59e0b', '#84cc16', '#10b981', '#06b6d4', '#3b82f6', '#8b5cf6', '#d946ef', '#f43f5e'];
-                    const container = document.getElementById('quick-colors-container');
-                    
-                    colors.forEach(c => {
-                        const btn = document.createElement('div');
-                        btn.className = 'quick-color-btn';
-                        btn.style.backgroundColor = c;
-                        btn.onclick = () => {
-                            state.currentColor = c;
-                            document.getElementById('ui-color-preview').style.backgroundColor = c;
-                            document.getElementById('ui-current-color').style.backgroundColor = c;
-                            ui.setTool('draw');
-                        };
-                        container.appendChild(btn);
+                buildPalette() {
+                    const p = document.getElementById('color-palette');
+                    ['#ffffff', '#a1a1aa', '#ef4444', '#f97316', '#f59e0b', '#84cc16', '#10b981', '#06b6d4', '#3b82f6', '#8b5cf6'].forEach(c => {
+                        const b = document.createElement('div'); b.className = 'palette-color'; b.style.backgroundColor = c;
+                        b.onclick = () => { AppState.color = c; document.getElementById('ui-color-preview').style.backgroundColor = c; document.getElementById('ui-color-dot').style.backgroundColor = c; UI.setTool('draw'); };
+                        p.appendChild(b);
                     });
                 }
 
                 hsv2rgb(h, s, v) {
-                    let r, g, b;
-                    let i = Math.floor(h * 6), f = h * 6 - i, p = v * (1 - s), q = v * (1 - f * s), t = v * (1 - (1 - f) * s);
-                    switch (i % 6) {
-                        case 0: r=v; g=t; b=p; break; case 1: r=q; g=v; b=p; break; case 2: r=p; g=v; b=t; break;
-                        case 3: r=p; g=q; b=v; break; case 4: r=t; g=p; b=v; break; case 5: r=v; g=p; b=q; break;
-                    }
+                    let r, g, b, i = Math.floor(h*6), f = h*6-i, p = v*(1-s), q = v*(1-f*s), t = v*(1-(1-f)*s);
+                    switch(i%6) { case 0: r=v; g=t; b=p; break; case 1: r=q; g=v; b=p; break; case 2: r=p; g=v; b=t; break; case 3: r=p; g=q; b=v; break; case 4: r=t; g=p; b=v; break; case 5: r=v; g=p; b=q; break; }
                     return { r: Math.round(r*255), g: Math.round(g*255), b: Math.round(b*255) };
                 }
-
-                rgb2hex(r, g, b) {
-                    return "#" + ((1<<24) + (r<<16) + (g<<8) + b).toString(16).slice(1);
-                }
             }
-            let colorPicker;
+            const ColorEngine = new ColorManager();
 
         })();
     </script>
