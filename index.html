@@ -6,9 +6,7 @@
     <title>MR BOARD Studio · Jamoaviy ishlashning yangi davri</title>
     <script src="https://unpkg.com/lucide@latest"></script>
     <style>
-        /* ==================================================================
-           [1] DESIGN TOKENS (Zamonaviy SaaS / Studio uslubi)
-           ================================================================== */
+        /* [1] DESIGN TOKENS */
         :root {
             --bg-base: #ffffff;
             --bg-alt: #f8fafc;
@@ -22,7 +20,7 @@
             --glass-border: rgba(255, 255, 255, 0.4);
             --shadow-sm: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
             --shadow-lg: 0 20px 40px -10px rgba(0,0,0,0.1);
-            --shadow-glow: 0 0 60px -15px rgba(0, 122, 255, 0.3);
+            --shadow-glow: 0 0 80px -15px rgba(0, 122, 255, 0.4);
             --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
         }
 
@@ -33,167 +31,180 @@
                 --border-subtle: rgba(255, 255, 255, 0.1);
                 --glass-bg: rgba(15, 23, 42, 0.6); --glass-border: rgba(255, 255, 255, 0.1);
                 --shadow-lg: 0 30px 60px -10px rgba(0,0,0,0.5);
-                --shadow-glow: 0 0 80px -20px rgba(0, 122, 255, 0.2);
+                --shadow-glow: 0 0 100px -20px rgba(0, 122, 255, 0.3);
             }
         }
 
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", sans-serif; }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: "SF Pro Display", -apple-system, BlinkMacSystemFont, sans-serif; }
         html { scroll-behavior: smooth; }
         body { background: var(--bg-base); color: var(--text-main); line-height: 1.6; overflow-x: hidden; }
 
-        /* ==================================================================
-           [2] HEADER (Navigatsiya)
-           ================================================================== */
+        /* [2] HEADER */
         header {
             position: fixed; top: 0; left: 0; right: 0; z-index: 1000;
-            background: var(--glass-bg); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+            background: var(--glass-bg); backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px);
             border-bottom: 1px solid var(--border-subtle);
             padding: 16px 5%; display: flex; justify-content: space-between; align-items: center;
+            transition: all 0.3s ease;
         }
-        .brand { font-size: 22px; font-weight: 900; display: flex; align-items: center; gap: 10px; letter-spacing: -0.5px; }
+        .brand { font-size: 24px; font-weight: 900; display: flex; align-items: center; gap: 10px; letter-spacing: -0.5px; text-decoration: none; color: var(--text-main); }
         .brand span { color: var(--brand-primary); }
-        .nav-links { display: flex; gap: 24px; }
-        .nav-links a { color: var(--text-muted); text-decoration: none; font-weight: 600; font-size: 15px; transition: color 0.2s; }
+        .nav-links { display: flex; gap: 32px; }
+        .nav-links a { color: var(--text-muted); text-decoration: none; font-weight: 600; font-size: 15px; transition: color 0.2s; position: relative; }
         .nav-links a:hover { color: var(--text-main); }
+        .nav-links a::after { content: ''; position: absolute; width: 0; height: 2px; bottom: -4px; left: 0; background: var(--brand-primary); transition: width 0.3s ease; }
+        .nav-links a:hover::after { width: 100%; }
+        
         .header-btn {
-            background: var(--brand-primary); color: white; padding: 10px 20px; border-radius: 99px;
+            background: var(--brand-primary); color: white; padding: 10px 24px; border-radius: 99px;
             text-decoration: none; font-weight: 700; font-size: 14px; transition: 0.3s var(--ease-spring);
         }
         .header-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 20px var(--brand-alpha); }
 
-        /* ==================================================================
-           [3] HERO SECTION
-           ================================================================== */
+        /* [3] HERO SECTION */
         .hero {
-            padding: 160px 5% 80px; text-align: center;
-            background: radial-gradient(circle at 50% 0%, var(--brand-alpha) 0%, transparent 70%);
+            padding: 180px 5% 100px; text-align: center;
+            background: radial-gradient(circle at 50% -20%, var(--brand-alpha) 0%, transparent 60%);
             display: flex; flex-direction: column; align-items: center;
+            position: relative;
         }
         .hero-badge {
-            background: var(--glass-bg); border: 1px solid var(--glass-border); padding: 8px 16px;
+            background: var(--bg-base); border: 1px solid var(--border-subtle); padding: 8px 20px;
             border-radius: 99px; font-size: 13px; font-weight: 800; color: var(--brand-primary);
             margin-bottom: 24px; display: inline-flex; align-items: center; gap: 8px; box-shadow: var(--shadow-sm);
+            animation: slideDown 0.6s ease-out;
         }
-        .hero h1 { font-size: clamp(40px, 6vw, 72px); font-weight: 900; letter-spacing: -2px; line-height: 1.1; margin-bottom: 24px; max-width: 900px; }
-        .hero p { font-size: clamp(18px, 2vw, 22px); color: var(--text-muted); max-width: 700px; margin-bottom: 40px; }
+        .hero h1 { font-size: clamp(48px, 8vw, 84px); font-weight: 900; letter-spacing: -2.5px; line-height: 1.05; margin-bottom: 24px; max-width: 1000px; animation: slideUp 0.8s ease-out 0.1s both; }
+        .hero p { font-size: clamp(18px, 2vw, 22px); color: var(--text-muted); max-width: 700px; margin-bottom: 40px; animation: slideUp 0.8s ease-out 0.2s both; }
         
-        .hero-actions { display: flex; gap: 16px; flex-wrap: wrap; justify-content: center; }
+        .hero-actions { display: flex; gap: 16px; flex-wrap: wrap; justify-content: center; animation: slideUp 0.8s ease-out 0.3s both; }
         
         .btn-main {
-            padding: 18px 32px; border-radius: 20px; font-size: 18px; font-weight: 700; text-decoration: none;
-            display: flex; align-items: center; gap: 12px; transition: 0.3s var(--ease-spring);
+            padding: 18px 36px; border-radius: 20px; font-size: 18px; font-weight: 700; text-decoration: none;
+            display: flex; align-items: center; gap: 12px; transition: 0.3s var(--ease-spring); cursor: pointer;
         }
         .btn-start { background: var(--brand-primary); color: #fff; box-shadow: 0 10px 30px var(--brand-alpha); }
-        .btn-start:hover { transform: translateY(-4px) scale(1.02); box-shadow: 0 15px 40px rgba(0, 122, 255, 0.3); }
+        .btn-start:hover { transform: translateY(-4px) scale(1.02); box-shadow: 0 20px 40px rgba(0, 122, 255, 0.4); }
         
-        .btn-doc { background: var(--bg-alt); color: var(--text-main); border: 1.5px solid var(--border-subtle); }
-        .btn-doc:hover { background: var(--brand-alpha); border-color: var(--brand-primary); transform: translateY(-4px); }
+        .btn-doc { background: var(--glass-bg); backdrop-filter: blur(10px); color: var(--text-main); border: 1px solid var(--border-subtle); }
+        .btn-doc:hover { background: var(--bg-base); border-color: var(--brand-primary); transform: translateY(-4px); box-shadow: var(--shadow-sm); }
 
-        /* ==================================================================
-           [4] APP MOCKUP (Hero Image CSS yordamida)
-           ================================================================== */
+        /* [4] ANIMATED APP MOCKUP */
         .app-mockup-wrapper {
-            margin-top: 60px; width: 100%; max-width: 1100px; position: relative;
-            perspective: 1000px; animation: floatUp 1s ease-out forwards; opacity: 0; transform: translateY(40px);
+            margin-top: 80px; width: 100%; max-width: 1200px; position: relative;
+            perspective: 1200px; animation: slideUp 1s ease-out 0.5s both;
         }
-        @keyframes floatUp { to { opacity: 1; transform: translateY(0); } }
-        
         .app-mockup {
-            background: var(--bg-canvas); background-image: radial-gradient(var(--border-strong) 1px, transparent 1px); background-size: 24px 24px;
-            border-radius: 24px; border: 1px solid var(--glass-border); box-shadow: var(--shadow-lg), var(--shadow-glow);
-            height: 60vh; min-height: 400px; max-height: 600px; position: relative; overflow: hidden;
+            background: var(--bg-alt); 
+            background-image: radial-gradient(var(--border-subtle) 1px, transparent 1px); background-size: 24px 24px;
+            border-radius: 24px; border: 1px solid var(--border-subtle); box-shadow: var(--shadow-lg), var(--shadow-glow);
+            height: 65vh; min-height: 500px; max-height: 700px; position: relative; overflow: hidden;
             display: flex; flex-direction: column;
+            transform: rotateX(5deg); transition: transform 0.5s ease;
         }
+        .app-mockup-wrapper:hover .app-mockup { transform: rotateX(0deg) translateY(-10px); }
         
-        /* Mockup Header */
-        .mock-header { height: 48px; background: var(--glass-bg); backdrop-filter: blur(20px); border-bottom: 1px solid var(--border-subtle); display: flex; align-items: center; padding: 0 20px; gap: 8px; }
+        .mock-header { height: 52px; background: var(--glass-bg); backdrop-filter: blur(20px); border-bottom: 1px solid var(--border-subtle); display: flex; align-items: center; padding: 0 20px; gap: 8px; }
         .mock-dot { width: 12px; height: 12px; border-radius: 50%; }
         .mock-dot.r { background: #ff3b30; } .mock-dot.y { background: #ffcc00; } .mock-dot.g { background: #34c759; }
         
-        /* Mockup Canvas Elements */
-        .mock-canvas { flex: 1; position: relative; }
-        .mock-shape { position: absolute; border: 4px solid var(--brand-primary); border-radius: 12px; top: 20%; left: 30%; width: 150px; height: 100px; transform: rotate(-10deg); }
-        .mock-line { position: absolute; top: 40%; left: 45%; width: 200px; height: 4px; background: #34c759; transform: rotate(15deg); border-radius: 4px; }
-        .mock-cursor { position: absolute; top: 45%; left: 60%; background: #ffcc00; color: #000; padding: 4px 12px; border-radius: 99px; font-size: 11px; font-weight: 800; border: 2px solid #fff; box-shadow: 0 4px 10px rgba(0,0,0,0.2); }
+        .mock-canvas { flex: 1; position: relative; overflow: hidden; }
+        .mock-shape { position: absolute; border: 4px solid var(--brand-primary); border-radius: 16px; top: 30%; left: 35%; width: 180px; height: 120px; transform: rotate(-10deg); animation: float 6s ease-in-out infinite; background: var(--brand-alpha); }
+        .mock-line { position: absolute; top: 50%; left: 45%; width: 250px; height: 4px; background: #34c759; transform: rotate(15deg); border-radius: 4px; animation: drawLine 3s infinite alternate; }
+        .mock-cursor { position: absolute; top: 55%; left: 65%; background: #000; color: #fff; padding: 6px 14px; border-radius: 99px; font-size: 12px; font-weight: 800; border: 2px solid #fff; box-shadow: 0 4px 15px rgba(0,0,0,0.3); animation: cursorMove 4s ease-in-out infinite; }
         
-        /* Mockup Dock */
         .mock-dock {
-            position: absolute; bottom: 24px; left: 50%; transform: translateX(-50%);
-            background: var(--glass-bg); backdrop-filter: blur(20px); border: 1px solid var(--glass-border);
-            padding: 12px 24px; border-radius: 32px; display: flex; gap: 16px; box-shadow: var(--shadow-sm);
+            position: absolute; bottom: 32px; left: 50%; transform: translateX(-50%);
+            background: var(--glass-bg); backdrop-filter: blur(24px); border: 1px solid var(--glass-border);
+            padding: 12px 24px; border-radius: 32px; display: flex; gap: 16px; box-shadow: var(--shadow-lg);
         }
-        .mock-dock-icon { width: 40px; height: 40px; border-radius: 12px; background: var(--bg-base); display: flex; align-items: center; justify-content: center; color: var(--text-muted); }
-        .mock-dock-icon.active { background: var(--brand-primary); color: #fff; }
+        .mock-dock-icon { width: 44px; height: 44px; border-radius: 14px; background: var(--bg-base); display: flex; align-items: center; justify-content: center; color: var(--text-muted); cursor: pointer; transition: 0.2s; }
+        .mock-dock-icon:hover { transform: translateY(-5px); color: var(--brand-primary); }
+        .mock-dock-icon.active { background: var(--brand-primary); color: #fff; box-shadow: 0 5px 15px var(--brand-alpha); }
 
-        /* ==================================================================
-           [5] FEATURES & TEXT SECTIONS
-           ================================================================== */
-        .section { padding: 100px 5%; max-width: 1200px; margin: 0 auto; }
-        .section-header { text-align: center; margin-bottom: 60px; }
-        .section-header h2 { font-size: 42px; font-weight: 800; letter-spacing: -1px; margin-bottom: 16px; }
-        .section-header p { font-size: 18px; color: var(--text-muted); max-width: 600px; margin: 0 auto; }
+        /* [5] SECTIONS & REVEAL ANIMATION */
+        .reveal { opacity: 0; transform: translateY(40px); transition: 0.8s all ease; }
+        .reveal.active { opacity: 1; transform: translateY(0); }
 
-        .feature-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 32px; }
+        .section { padding: 120px 5%; max-width: 1200px; margin: 0 auto; }
+        .section-header { text-align: center; margin-bottom: 70px; }
+        .section-header h2 { font-size: 48px; font-weight: 900; letter-spacing: -1.5px; margin-bottom: 20px; }
+        .section-header p { font-size: 20px; color: var(--text-muted); max-width: 650px; margin: 0 auto; }
+
+        .feature-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 32px; }
         .feature-card {
-            background: var(--bg-alt); border: 1px solid var(--border-subtle); padding: 40px;
-            border-radius: 32px; transition: 0.3s var(--ease-spring);
+            background: var(--bg-base); border: 1px solid var(--border-subtle); padding: 40px;
+            border-radius: 32px; transition: 0.4s var(--ease-spring); position: relative; overflow: hidden;
         }
-        .feature-card:hover { transform: translateY(-8px); box-shadow: var(--shadow-lg); background: var(--bg-base); border-color: var(--brand-alpha); }
-        .icon-box { width: 64px; height: 64px; border-radius: 20px; background: var(--brand-alpha); color: var(--brand-primary); display: flex; align-items: center; justify-content: center; margin-bottom: 24px; }
+        .feature-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 4px; background: linear-gradient(90deg, var(--brand-primary), #34c759); opacity: 0; transition: 0.3s; }
+        .feature-card:hover { transform: translateY(-10px); box-shadow: var(--shadow-lg); border-color: transparent; }
+        .feature-card:hover::before { opacity: 1; }
+        
+        .icon-box { width: 64px; height: 64px; border-radius: 20px; background: var(--brand-alpha); color: var(--brand-primary); display: flex; align-items: center; justify-content: center; margin-bottom: 24px; transition: 0.3s; }
+        .feature-card:hover .icon-box { transform: scale(1.1) rotate(5deg); }
         .feature-card h3 { font-size: 24px; font-weight: 800; margin-bottom: 16px; }
-        .feature-card p { color: var(--text-muted); font-size: 16px; }
+        .feature-card p { color: var(--text-muted); font-size: 16px; line-height: 1.7; }
 
         .text-content { max-width: 800px; margin: 0 auto; }
-        .text-content h3 { font-size: 28px; font-weight: 800; margin: 40px 0 20px; display: flex; align-items: center; gap: 12px; }
-        .text-content p { font-size: 18px; color: var(--text-muted); margin-bottom: 20px; line-height: 1.8; }
+        .text-content h3 { font-size: 28px; font-weight: 800; margin: 50px 0 20px; display: flex; align-items: center; gap: 12px; }
+        .text-content p { font-size: 18px; color: var(--text-muted); margin-bottom: 24px; line-height: 1.8; }
         .text-content ul { margin-left: 24px; color: var(--text-muted); font-size: 18px; margin-bottom: 32px; }
-        .text-content li { margin-bottom: 12px; }
+        .text-content li { margin-bottom: 16px; padding-left: 8px; }
+        .text-content li::marker { color: var(--brand-primary); font-weight: bold; }
 
-        /* ==================================================================
-           [6] CTA & FOOTER
-           ================================================================== */
+        /* [6] CTA & FOOTER */
         .cta-section {
-            margin: 100px 5%; padding: 80px 40px; background: var(--text-main); color: var(--bg-base);
+            margin: 100px 5%; padding: 100px 40px; background: var(--text-main); color: var(--bg-base);
             border-radius: 40px; text-align: center; display: flex; flex-direction: column; align-items: center;
+            position: relative; overflow: hidden;
         }
-        .cta-section h2 { font-size: 48px; font-weight: 900; letter-spacing: -1px; margin-bottom: 24px; }
-        .cta-section p { font-size: 20px; opacity: 0.8; max-width: 600px; margin-bottom: 40px; }
+        .cta-section::before { content: ''; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%; background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 60%); pointer-events: none; }
+        .cta-section h2 { font-size: 56px; font-weight: 900; letter-spacing: -2px; margin-bottom: 24px; z-index: 1; }
+        .cta-section p { font-size: 22px; opacity: 0.8; max-width: 600px; margin-bottom: 40px; z-index: 1; }
         
-        footer { border-top: 1px solid var(--border-subtle); padding: 40px 5%; display: flex; justify-content: space-between; align-items: center; color: var(--text-muted); font-size: 14px; margin-top: 60px;}
+        footer { border-top: 1px solid var(--border-subtle); padding: 50px 5%; display: flex; justify-content: space-between; align-items: center; color: var(--text-muted); font-size: 15px; margin-top: 40px;}
         
+        /* Keyframes */
+        @keyframes slideUp { from { opacity: 0; transform: translateY(40px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes slideDown { from { opacity: 0; transform: translateY(-20px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes float { 0%, 100% { transform: translateY(0) rotate(-10deg); } 50% { transform: translateY(-20px) rotate(-5deg); } }
+        @keyframes drawLine { from { width: 50px; opacity: 0.5; } to { width: 250px; opacity: 1; } }
+        @keyframes cursorMove { 0% { top: 55%; left: 65%; } 50% { top: 40%; left: 40%; } 100% { top: 55%; left: 65%; } }
+
         @media (max-width: 768px) {
             .nav-links { display: none; }
-            .hero { padding-top: 120px; }
+            .hero { padding-top: 140px; }
+            .hero h1 { font-size: 40px; }
             .hero-actions { flex-direction: column; width: 100%; }
             .btn-main { width: 100%; justify-content: center; }
-            .app-mockup { height: 300px; }
-            footer { flex-direction: column; gap: 16px; text-align: center; }
+            .app-mockup { height: 400px; transform: none; }
+            footer { flex-direction: column; gap: 24px; text-align: center; }
         }
     </style>
 </head>
 <body>
 
     <header>
-        <div class="brand"><i data-lucide="layers" size="28" color="var(--brand-primary)"></i> MR <span>BOARD</span></div>
+        <a href="index.html" class="brand"><i data-lucide="layers" size="28" color="var(--brand-primary)"></i> MR <span>BOARD</span></a>
         <nav class="nav-links">
             <a href="#features">Imkoniyatlar</a>
             <a href="#about">Texnologiya</a>
-            <a href="#">Dokumentatsiya</a>
+            <a href="doc.html">Dokumentatsiya</a>
         </nav>
-        <a href="https://bystrange.github.io/board/" class="header-btn">Boshlash</a>
+        <a href="board.html" class="header-btn">Doskani ochish</a>
     </header>
 
     <section class="hero">
-        <div class="hero-badge"><i data-lucide="zap" size="16"></i> Enterprise Edition 2.0</div>
+        <div class="hero-badge"><i data-lucide="sparkles" size="16"></i> Enterprise Edition 2.0</div>
         <h1>Jamoaviy ishlashning <br> yangi davri</h1>
-        <p>MR BOARD — g'oyalaringizni real vaqtda, cheksiz doskada, ovozli muloqot va chat orqali jamoangiz bilan hayotga tatbiq etish uchun mukammal virtual muhit.</p>
+        <p>MR BOARD — g'oyalaringizni real vaqtda, cheksiz doskada, ovozli muloqot va chat orqali jamoangiz bilan hayotga tatbiq etish uchun mukammal muhit.</p>
         
         <div class="hero-actions">
-            <a href="https://bystrange.github.io/board/" class="btn-main btn-start">
+            <a href="board.html" class="btn-main btn-start">
                 MR BOARD ni boshlash <i data-lucide="arrow-right"></i>
             </a>
-            <a href="#" class="btn-main btn-doc">
-                <i data-lucide="book-open"></i> Dokumentatsiyani o'qish
+            <a href="doc.html" class="btn-main btn-doc">
+                <i data-lucide="book-open"></i> Dokumentatsiya
             </a>
         </div>
 
@@ -201,26 +212,26 @@
             <div class="app-mockup">
                 <div class="mock-header">
                     <div class="mock-dot r"></div><div class="mock-dot y"></div><div class="mock-dot g"></div>
-                    <div style="flex:1; text-align:center; font-size:12px; font-weight:700; color:var(--text-muted);">mr-board.enterprise</div>
+                    <div style="flex:1; text-align:center; font-size:13px; font-weight:700; color:var(--text-muted);">mr-board.uz / alisher-room</div>
                 </div>
                 <div class="mock-canvas">
                     <div class="mock-shape"></div>
                     <div class="mock-line"></div>
-                    <div class="mock-cursor"><i data-lucide="mouse-pointer-2" size="12" style="display:inline; vertical-align:middle; margin-right:4px;"></i> Alisher</div>
+                    <div class="mock-cursor"><i data-lucide="mouse-pointer-2" size="14" style="display:inline; vertical-align:middle; margin-right:4px;"></i> Alisher</div>
                 </div>
                 <div class="mock-dock">
-                    <div class="mock-dock-icon"><i data-lucide="settings-2" size="20"></i></div>
-                    <div class="mock-dock-icon active"><i data-lucide="pencil" size="20"></i></div>
-                    <div class="mock-dock-icon"><i data-lucide="shapes" size="20"></i></div>
-                    <div class="mock-dock-icon"><i data-lucide="type" size="20"></i></div>
-                    <div style="width: 2px; height: 24px; background: var(--border-strong); margin: auto 4px;"></div>
-                    <div class="mock-dock-icon"><i data-lucide="mic" size="20"></i></div>
+                    <div class="mock-dock-icon"><i data-lucide="settings-2" size="22"></i></div>
+                    <div class="mock-dock-icon active"><i data-lucide="pencil" size="22"></i></div>
+                    <div class="mock-dock-icon"><i data-lucide="shapes" size="22"></i></div>
+                    <div class="mock-dock-icon"><i data-lucide="type" size="22"></i></div>
+                    <div style="width: 2px; height: 28px; background: var(--border-subtle); margin: auto 4px;"></div>
+                    <div class="mock-dock-icon"><i data-lucide="mic" size="22"></i></div>
                 </div>
             </div>
         </div>
     </section>
 
-    <section class="section" id="features">
+    <section class="section reveal" id="features">
         <div class="section-header">
             <h2>Hamma narsa bir joyda</h2>
             <p>Sizga va jamoangizga kerak bo'ladigan barcha kuchli vositalar silliq interfeys ortiga yashiringan.</p>
@@ -230,7 +241,7 @@
             <div class="feature-card">
                 <div class="icon-box"><i data-lucide="infinity" size="32"></i></div>
                 <h3>Cheksiz Doska</h3>
-                <p>G'oyalaringiz chegaralanmasligi uchun cheksiz (Infinite) Canvas tizimi. Xohlagancha uzoqlashtiring, yaqinlashtiring va harakatlaning.</p>
+                <p>G'oyalaringiz chegaralanmasligi uchun cheksiz (Infinite) Canvas tizimi. Xohlagancha uzoqlashtiring, yaqinlashtiring va erkin harakatlaning.</p>
             </div>
             <div class="feature-card">
                 <div class="icon-box"><i data-lucide="mic" size="32"></i></div>
@@ -240,7 +251,7 @@
             <div class="feature-card">
                 <div class="icon-box"><i data-lucide="zap" size="32"></i></div>
                 <h3>Nol-Kechikish (Zero Latency)</h3>
-                <p>Firebase Realtime Database arxitekturasi orqali siz chizgan chiziq dunyoning narigi chekkasidagi hamkoringizga millisoniyalarda yetib boradi.</p>
+                <p>Firebase Realtime Database orqali siz chizgan chiziq dunyoning narigi chekkasidagi hamkoringizga millisoniyalarda yetib boradi.</p>
             </div>
             <div class="feature-card">
                 <div class="icon-box"><i data-lucide="shield-check" size="32"></i></div>
@@ -250,48 +261,61 @@
         </div>
     </section>
 
-    <section class="section" id="about">
+    <section class="section reveal" id="about">
         <div class="text-content">
-            <h2 style="font-size: 42px; font-weight: 900; letter-spacing: -1px; text-align: center; margin-bottom: 60px;">Nega aynan MR BOARD?</h2>
+            <h2 style="font-size: 48px; font-weight: 900; letter-spacing: -1.5px; text-align: center; margin-bottom: 70px;">Nega aynan MR BOARD?</h2>
             
             <h3><i data-lucide="layers" color="var(--brand-primary)"></i> Kreativlik va Texnologiya uyg'unligi</h3>
-            <p>Biz MR BOARD ni yaratishda faqatgina funksionallikka emas, balki foydalanuvchi tajribasiga (UX) ham alohida e'tibor qaratdik. Tizim Apple'ning <strong>iOS 26 "Glassmorphism"</strong> dizayn kodidan ilhomlanib ishlangan. Bu degani – ekrandagi barcha elementlar yarim shaffof (blur) oynadan iborat, tugmalar sakrovchi (elastic spring) animatsiyaga ega va ko'zni charchatmaydi.</p>
+            <p>Biz MR BOARD ni yaratishda faqatgina funksionallikka emas, balki foydalanuvchi tajribasiga (UX) ham alohida e'tibor qaratdik. Tizim eng so'nggi <strong>Glassmorphism</strong> dizayn kodidan ilhomlanib ishlangan. Bu degani – ekrandagi barcha elementlar yarim shaffof oynadan iborat va ko'zni charchatmaydi.</p>
 
             <h3><i data-lucide="cpu" color="var(--brand-primary)"></i> Dvigatel ostida nimalar bor?</h3>
             <p>MR BOARD oddiy veb-sayt emas, u to'laqonli <strong>Monolith Web-Application</strong> hisoblanadi. Uning barqaror ishlashini quyidagi texnologiyalar ta'minlaydi:</p>
             <ul>
-                <li><strong>HTML5 Canvas API:</strong> Murakkab grafikalar, Spline chiziqlar va minglab obyektlarni qotishlarsiz 60FPS da chizib berish uchun Maxsus GraphicsEngine yozilgan.</li>
-                <li><strong>Firebase RTDB:</strong> Ma'lumotlarni sinxronlash tizimi. Obyektlar massivi, kursorlarning real vaqtdagi harakati shular orqali boshqariladi.</li>
-                <li><strong>WebRTC Mesh Architecture:</strong> Foydalanuvchilar o'rtasida P2P (Peer-to-peer) tarmoq yaratib, markaziy serversiz bevosita audioni ulash imkonini beradi.</li>
+                <li><strong>HTML5 Canvas API:</strong> Murakkab grafikalar, Spline chiziqlar va minglab obyektlarni qotishlarsiz 60FPS da chizib berish uchun maxsus dvigatel.</li>
+                <li><strong>Firebase RTDB:</strong> Ma'lumotlarni sinxronlash tizimi. Obyektlar massivi va kursorlar harakati shular orqali boshqariladi.</li>
+                <li><strong>WebRTC Architecture:</strong> Foydalanuvchilar o'rtasida to'g'ridan-to'g'ri (P2P) tarmoq yaratib, serversiz audioni ulash imkonini beradi.</li>
             </ul>
-
-            <h3><i data-lucide="users" color="var(--brand-primary)"></i> Kimlar uchun mo'ljallangan?</h3>
-            <p>Ushbu platforma arxitektorlar, dasturchilar, dizaynerlar jamoasi, onlayn ta'lim beruvchi o'qituvchilar va aqliy hujum (Brainstorming) qilmoqchi bo'lgan har qanday korporativ jamoalar uchun ideal tanlovdir.</p>
         </div>
     </section>
 
-    <section class="cta-section">
-        <h2>O'z xonangizni yarating</h2>
-        <p>Hech qanday ro'yxatdan o'tishlar yo'q. Shunchaki ismingizni yozing va hamkorlikni hoziroq boshlang.</p>
-        <a href="https://bystrange.github.io/board/" class="btn-main" style="background: var(--bg-base); color: var(--text-main); box-shadow: 0 10px 30px rgba(0,0,0,0.3);">
-            MR BOARD ni ishga tushirish <i data-lucide="arrow-right"></i>
+    <section class="cta-section reveal">
+        <h2 style="z-index: 2; position: relative;">O'z xonangizni yarating</h2>
+        <p style="z-index: 2; position: relative;">Hech qanday murakkab ro'yxatdan o'tishlar yo'q. Shunchaki ismingizni yozing va hamkorlikni hoziroq boshlang.</p>
+        <a href="board.html" class="btn-main" style="background: var(--bg-base); color: var(--text-main); z-index: 2; position: relative; box-shadow: 0 10px 40px rgba(0,0,0,0.4);">
+            Doskani ochish <i data-lucide="arrow-right"></i>
         </a>
     </section>
 
     <footer>
         <div>
-            <div style="font-size: 18px; font-weight: 800; color: var(--text-main); margin-bottom: 4px;">MR BOARD Studio</div>
+            <div style="font-size: 20px; font-weight: 900; color: var(--text-main); margin-bottom: 4px; letter-spacing: -0.5px;">MR BOARD Studio</div>
             <div>Barcha huquqlar himoyalangan &copy; 2026</div>
         </div>
-        <div style="display: flex; gap: 24px;">
-            <a href="https://bystrange.github.io/board/" style="color: var(--text-muted); text-decoration: none;">Dasturga kirish</a>
-            <a href="#" style="color: var(--text-muted); text-decoration: none;">Dokumentatsiya</a>
-            <a href="#" style="color: var(--text-muted); text-decoration: none;">GitHub</a>
+        <div style="display: flex; gap: 32px; font-weight: 600;">
+            <a href="board.html" style="color: var(--text-muted); text-decoration: none; transition: 0.2s;">Doska</a>
+            <a href="doc.html" style="color: var(--text-muted); text-decoration: none; transition: 0.2s;">Dokumentatsiya</a>
+            <a href="https://github.com/" target="_blank" style="color: var(--text-muted); text-decoration: none; transition: 0.2s;">GitHub</a>
         </div>
     </footer>
 
     <script>
+        // Ikonkalarni yuklash
         lucide.createIcons();
+
+        // Scroll Reveal Animatsiyasi (Sahifani pastga tushirganda elementlar paydo bo'lishi)
+        function reveal() {
+            var reveals = document.querySelectorAll(".reveal");
+            for (var i = 0; i < reveals.length; i++) {
+                var windowHeight = window.innerHeight;
+                var elementTop = reveals[i].getBoundingClientRect().top;
+                var elementVisible = 100;
+                if (elementTop < windowHeight - elementVisible) {
+                    reveals[i].classList.add("active");
+                }
+            }
+        }
+        window.addEventListener("scroll", reveal);
+        reveal(); // Dastlabki yuklanishda tekshirish
     </script>
 </body>
 </html>
