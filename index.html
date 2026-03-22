@@ -2,7 +2,7 @@
 <html lang="uz">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>MR BOARD Studio · Jamoaviy ishlashning yangi davri</title>
     <script src="https://unpkg.com/lucide@latest"></script>
     <style>
@@ -50,7 +50,7 @@
         .brand { font-size: 24px; font-weight: 900; display: flex; align-items: center; gap: 10px; letter-spacing: -0.5px; text-decoration: none; color: var(--text-main); }
         .brand span { color: var(--brand-primary); }
         .nav-links { display: flex; gap: 32px; }
-        .nav-links a { color: var(--text-muted); text-decoration: none; font-weight: 600; font-size: 15px; transition: color 0.2s; position: relative; }
+        .nav-links a { color: var(--text-muted); text-decoration: none; font-weight: 600; font-size: 15px; position: relative; }
         .nav-links a:hover { color: var(--text-main); }
         .nav-links a::after { content: ''; position: absolute; width: 0; height: 2px; bottom: -4px; left: 0; background: var(--brand-primary); transition: width 0.3s ease; }
         .nav-links a:hover::after { width: 100%; }
@@ -86,7 +86,7 @@
         .btn-doc { background: var(--glass-bg); backdrop-filter: blur(10px); color: var(--text-main); border: 1px solid var(--border-subtle); }
         .btn-doc:hover { background: var(--bg-base); border-color: var(--brand-primary); transform: translateY(-4px); box-shadow: var(--shadow-sm); }
 
-        /* [4] IFRAME MOCKUP (CYCLING THROUGH PART1..PART20) */
+        /* [4] IFRAME MOCKUP – responsive */
         .app-mockup-wrapper {
             margin-top: 80px; width: 100%; max-width: 1200px; position: relative;
             perspective: 1200px; animation: slideUp 1s ease-out 0.5s both;
@@ -121,7 +121,7 @@
             height: 100%;
             border: none;
             background: transparent;
-            pointer-events: none; /* Prevent interaction with the demo animation */
+            pointer-events: none; /* demo uchun interaktivlik o‘chirilgan */
         }
 
         .mock-dock {
@@ -176,18 +176,59 @@
         /* Keyframes */
         @keyframes slideUp { from { opacity: 0; transform: translateY(40px); } to { opacity: 1; transform: translateY(0); } }
         @keyframes slideDown { from { opacity: 0; transform: translateY(-20px); } to { opacity: 1; transform: translateY(0); } }
-        @keyframes float { 0%, 100% { transform: translateY(0) rotate(-10deg); } 50% { transform: translateY(-20px) rotate(-5deg); } }
-        @keyframes drawLine { from { width: 50px; opacity: 0.5; } to { width: 250px; opacity: 1; } }
-        @keyframes cursorMove { 0% { top: 55%; left: 65%; } 50% { top: 40%; left: 40%; } 100% { top: 55%; left: 65%; } }
 
+        /* ========== MOBILE RESPONSIVE (max-width: 768px) ========== */
         @media (max-width: 768px) {
             .nav-links { display: none; }
             .hero { padding-top: 140px; }
             .hero h1 { font-size: 40px; }
             .hero-actions { flex-direction: column; width: 100%; }
             .btn-main { width: 100%; justify-content: center; }
-            .app-mockup { height: 400px; transform: none; }
-            footer { flex-direction: column; gap: 24px; text-align: center; }
+
+            /* IFRAME RESPONSIVE – telefonda to‘g‘ri sig‘ish */
+            .app-mockup-wrapper {
+                margin-top: 40px;
+                width: 100%;
+                max-width: 100%;
+                padding: 0 10px;
+            }
+            .app-mockup {
+                height: auto;
+                min-height: 320px;
+                max-height: 70vh;
+                transform: none;
+                border-radius: 20px;
+            }
+            .iframe-container {
+                flex: 1;
+                width: 100%;
+                overflow: auto;
+                -webkit-overflow-scrolling: touch;
+            }
+            #board-iframe {
+                width: 100%;
+                height: 100%;
+                border: none;
+                display: block;
+                background: var(--bg-alt);
+                pointer-events: none; /* agar interaktivlik kerak bo‘lsa, olib tashlang */
+            }
+            .mock-header {
+                height: 44px;
+                padding: 0 12px;
+            }
+            .mock-header span {
+                font-size: 11px;
+            }
+            .mock-dock {
+                display: none; /* mobil qurilmada dock yashirilgan (ixtiyoriy) */
+            }
+            footer {
+                flex-direction: column;
+                gap: 24px;
+                text-align: center;
+                padding: 40px 5%;
+            }
         }
     </style>
 </head>
@@ -221,18 +262,10 @@
             <div class="app-mockup">
                 <div class="mock-header">
                     <div class="mock-dot r"></div><div class="mock-dot y"></div><div class="mock-dot g"></div>
-                    <span>mr-board.uz / alisher-room</span>
+                    <span>mr-board.uz</span>
                 </div>
                 <div class="iframe-container">
                     <iframe id="board-iframe" src="part1.html" title="MR BOARD interaktiv namoyish" loading="lazy"></iframe>
-                </div>
-                <div class="mock-dock">
-                    <div class="mock-dock-icon"><i data-lucide="settings-2" size="22"></i></div>
-                    <div class="mock-dock-icon active"><i data-lucide="pencil" size="22"></i></div>
-                    <div class="mock-dock-icon"><i data-lucide="shapes" size="22"></i></div>
-                    <div class="mock-dock-icon"><i data-lucide="type" size="22"></i></div>
-                    <div style="width: 2px; height: 28px; background: var(--border-subtle); margin: auto 4px;"></div>
-                    <div class="mock-dock-icon"><i data-lucide="mic" size="22"></i></div>
                 </div>
             </div>
         </div>
@@ -325,7 +358,6 @@
         const partCount = 20;
         let currentPart = 1;
         const iframe = document.getElementById('board-iframe');
-        const baseUrl = ''; // assuming partX.html files are in same directory
 
         function loadNextPart() {
             const nextPart = (currentPart % partCount) + 1; // 1..20 then back to 1
