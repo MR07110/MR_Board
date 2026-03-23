@@ -5,7 +5,7 @@
 </p>
 
 <p align="center">
-  <strong>Professional darajadagi interaktiv online doska va ta'lim platformasi.</strong><br>
+  <strong>professional darajadagi interaktiv online doska va ta'lim platformasi.</strong><br>
   Real-vaqt rejimida hamkorlik qilish, chizish va masofaviy dars o'tish uchun mo'ljallangan.
 </p>
 
